@@ -1,5 +1,5 @@
 from sqlalchemy import *
-from database.models import UsersOrm
+from database.models import UsersOrm, PreviousConcertsOrm
 from database.db import Base, engine, async_session, date
 from sqlalchemy.orm import joinedload
 from datetime import datetime, timedelta
@@ -20,6 +20,7 @@ class AsyncORM:
             engine.echo = True
 
 
+    '''UsersORM'''
     # Получение пользователя по id
     @staticmethod
     async def get_user(user_id: int) -> UsersOrm:
@@ -101,3 +102,78 @@ class AsyncORM:
             return True
         else:
             return False
+        
+    '''/UsersORM/'''
+
+    '''PreviousConcertsORM'''
+    # Получение прошедшего концерта по id
+    @staticmethod
+    async def get_previous_concert_by_name(name: str) -> PreviousConcertsOrm:
+        async with async_session() as session:
+
+            result = await session.execute(
+                select(PreviousConcertsOrm).where(PreviousConcertsOrm.name == name))
+            previous_concert = result.scalar()
+            
+            return previous_concert
+        
+
+    # Добавление прошедшего концерта в базу данных
+    @staticmethod
+    async def add_previous_concert(name: str, info_text: str, info_file_ids: list[str] = []) -> bool:
+        concert = await AsyncORM.get_previous_concert_by_name(name=name)
+        
+        if not concert:
+            user = PreviousConcertsOrm(name=name, info_text=info_text, info_file_ids=info_file_ids)
+
+            async with async_session() as session:
+                session.add(user)
+
+                await session.commit() 
+            return True
+        else:
+            return False
+
+
+    # Получение всех прошедших концертов
+    @staticmethod
+    async def get_previous_concerts() -> list[PreviousConcertsOrm]:
+        
+        async with async_session() as session:
+            result = await session.execute(
+                select(PreviousConcertsOrm))
+            users = result.scalars().all()
+            
+            return users
+        
+
+    # Изменение информации о прошедшем концерте
+    @staticmethod
+    async def change_previousConcert_info(id: int, name: str, info_text: str, info_file_ids: list[str] = []) -> bool:
+
+        async with async_session() as session:
+            result = await session.execute(select(PreviousConcertsOrm).where(PreviousConcertsOrm.id == id))
+            previousConcert: PreviousConcertsOrm = result.scalar()
+
+            previousConcert.name = name
+            previousConcert.info_text = info_text
+            previousConcert.info_file_ids = info_file_ids
+
+            await session.commit()
+                
+        return True
+    
+
+    # Удаление прошедшего концерта по id
+    @staticmethod
+    async def delete_previous_concert(id: int) -> PreviousConcertsOrm:
+        async with async_session() as session:
+
+            result = await session.execute(select(PreviousConcertsOrm).where(PreviousConcertsOrm.id == id))
+            previousConcert: PreviousConcertsOrm = result.scalar()
+
+            session.delete(previousConcert) 
+            session.commit()  
+
+            
+    '''/PreviousConcertsORM/'''

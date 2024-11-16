@@ -1,1 +1,1 @@
-from states import User
+from states import Admin

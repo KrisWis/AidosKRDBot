@@ -2,7 +2,7 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 
 # Инлайн-клавиатура для админ-меню
-def admin_menu_kb():
+async def admin_menu_kb():
     kb = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='◀️ Прошедшие концерты', callback_data='admin|previous_concerts'),
     InlineKeyboardButton(text='▶️ Предстоящие концерты', callback_data='admin|future_concerts')],
@@ -12,3 +12,18 @@ def admin_menu_kb():
     [InlineKeyboardButton(text='📊 Статистика', callback_data='admin|stats')]])
 
     return kb
+
+
+'''Прошедшие концерты'''
+# Получение кнопки из инлайн-клавиатуры для добавления прошедшего концерта
+async def get_previous_concert_kb_button():
+    return [InlineKeyboardButton(text='➕ Добавить концерт', callback_data='admin|previous_concerts|add')]
+
+
+# Инлайн-клавиатура для добавления прошедшего концерта
+async def add_previous_concert_kb():
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+    [await get_previous_concert_kb_button()]])
+
+    return kb
+'''/Прошедшие концерты/'''

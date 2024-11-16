@@ -29,7 +29,7 @@ async def start(message: types.Message, state: FSMContext):
 
                 referer_id = int(referer_id)  
 
-        await AsyncORM.add_user(
+        result = await AsyncORM.add_user(
             user_id,
             username,
             now,
@@ -37,9 +37,14 @@ async def start(message: types.Message, state: FSMContext):
             referer_id
         )
 
+        if not result:
+            await message.answer(globalText.adding_data_error_text)
+            return
+
     await message.answer(globalText.start_menu_text.format(first_name), 
-                reply_markup=globalKeyboards.start_menu_kb())
+                reply_markup=await globalKeyboards.start_menu_kb())
     await state.clear()
+
 
 def hand_add():
     router.message.register(start, StateFilter("*"), CommandStart())

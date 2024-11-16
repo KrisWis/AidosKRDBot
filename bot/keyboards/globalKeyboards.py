@@ -2,7 +2,7 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 
 # Инлайн-клавиатура для начального меню
-def start_menu_kb():
+async def start_menu_kb():
     kb = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='◀️ Прошедшие концерты', callback_data='start|previous_concerts'),
     InlineKeyboardButton(text='▶️ Предстоящие концерты', callback_data='start|future_concerts')],
