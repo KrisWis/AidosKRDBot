@@ -30,20 +30,6 @@ class AsyncORM:
             return result
         
 
-    # Получение пользователя по username
-    @staticmethod
-    async def get_user_by_username(username: str) -> UsersOrm:
-        async with async_session() as session:
-
-            result = await session.execute(
-                select(UsersOrm).where(UsersOrm.username == username).options(joinedload(UsersOrm.profile))
-            )
-
-            user = result.scalar()
-
-            return user
-        
-
     # Получение пользователей по параметрам
     @staticmethod
     async def get_users(period: str = None, geo: str = None) -> list[UsersOrm] | str:
@@ -102,10 +88,11 @@ class AsyncORM:
         
     # Добавление пользователя в базу данных
     @staticmethod
-    async def add_user(user_id: int, username: str, user_reg_date: date, user_geo: str) -> bool:
-
+    async def add_user(user_id: int, username: str, user_reg_date: date, user_geo: str, referer_id: int) -> bool:
+        user = await AsyncORM.get_user(user_id=user_id)
+        
         if not user:
-            user = UsersOrm(user_id=user_id, username=username, user_reg_date=user_reg_date, user_geo=user_geo)
+            user = UsersOrm(user_id=user_id, username=username, user_reg_date=user_reg_date, user_geo=user_geo, referer_id=referer_id)
 
             async with async_session() as session:
                 session.add(user)

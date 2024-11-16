@@ -1,1 +1,1 @@
-from texts import globalText
+from utils.texts import globalText, adminText

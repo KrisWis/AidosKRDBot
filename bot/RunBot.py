@@ -21,6 +21,8 @@ async def on_startup() -> None:
     await bot.set_my_commands(commands)
 
     handlers.hand_start.hand_add()
+
+    handlers.hand_admin.hand_add()
     
     bot_info = await bot.get_me()
 

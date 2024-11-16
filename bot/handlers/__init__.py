@@ -1,1 +1,1 @@
-from handlers import hand_start
+from handlers import hand_start, hand_admin
