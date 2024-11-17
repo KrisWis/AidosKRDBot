@@ -1,6 +1,6 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-
+'''Глобальное'''
 # Инлайн-клавиатура для админ-меню
 async def admin_menu_kb():
     kb = InlineKeyboardMarkup(inline_keyboard=[
@@ -12,6 +12,7 @@ async def admin_menu_kb():
     [InlineKeyboardButton(text='📊 Статистика', callback_data='admin|stats')]])
 
     return kb
+'''/Глобальное/'''
 
 
 '''Прошедшие концерты'''
@@ -32,6 +33,24 @@ async def add_previous_concert_kb():
 async def back_to_admin_menu_kb():
     kb = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='🔙 Обратно в админ-меню', callback_data='admin')]])
+
+    return kb
+
+
+# Инлайн-клавиатура для взаимодействия с данными о прошедшем концерте
+async def previous_concert_actions_kb(previous_concert_kb: int):
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='🔄 Заменить', callback_data=f'previous_concerts|{previous_concert_kb}|replace')],
+    [InlineKeyboardButton(text='❌ Удалить', callback_data=f'previous_concerts|{previous_concert_kb}|delete')]])
+
+    return kb
+
+
+# Инлайн-клавиатура для подтверждения/отклонения удаления данных о прошедшем концерте
+async def previous_concert_delete_confirmation_kb(previous_concert_kb: int):
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='Я понимаю, удалить', callback_data=f'previous_concerts|{previous_concert_kb}|delete|yes')],
+    [InlineKeyboardButton(text='Отменить удаление', callback_data=f'previous_concerts|{previous_concert_kb}|delete|no')]])
 
     return kb
 '''/Прошедшие концерты/'''

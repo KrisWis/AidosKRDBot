@@ -157,14 +157,13 @@ class AsyncORM:
 
     # Изменение информации о прошедшем концерте
     @staticmethod
-    async def change_previousConcert_info(id: int, name: str, info_text: str,
+    async def change_previousConcert_info(id: int, info_text: str,
         photo_file_ids: list[str] = [], video_file_ids: list[str] = []) -> bool:
 
         async with async_session() as session:
             result = await session.execute(select(PreviousConcertsOrm).where(PreviousConcertsOrm.id == id))
             previousConcert: PreviousConcertsOrm = result.scalar()
 
-            previousConcert.name = name
             previousConcert.info_text = info_text
             previousConcert.photo_file_ids = photo_file_ids
             previousConcert.video_file_ids = video_file_ids
@@ -181,9 +180,12 @@ class AsyncORM:
 
             result = await session.execute(select(PreviousConcertsOrm).where(PreviousConcertsOrm.id == id))
             previousConcert: PreviousConcertsOrm = result.scalar()
-
-            session.delete(previousConcert) 
-            session.commit()  
-
             
+            if previousConcert:
+                await session.delete(previousConcert)
+                await session.commit()  
+                return True
+            
+            return False
+
     '''/PreviousConcertsORM/'''
