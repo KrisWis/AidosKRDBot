@@ -23,7 +23,15 @@ async def get_previous_concert_kb_button():
 # Инлайн-клавиатура для добавления прошедшего концерта
 async def add_previous_concert_kb():
     kb = InlineKeyboardMarkup(inline_keyboard=[
-    [await get_previous_concert_kb_button()]])
+    await get_previous_concert_kb_button()])
+
+    return kb
+
+
+# Инлайн-клавиатура для перехода обратно в админ-меню
+async def back_to_admin_menu_kb():
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='🔙 Обратно в админ-меню', callback_data='admin')]])
 
     return kb
 '''/Прошедшие концерты/'''

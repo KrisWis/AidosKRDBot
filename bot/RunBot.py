@@ -6,8 +6,6 @@ import logging
 from database.orm import AsyncORM
 from middlewares import MediaGroupMiddleware
 
-# TODO: протестить прошедшие концерты
-
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(filename='Logs.log', level=logging.INFO)

@@ -15,3 +15,5 @@ adding_data_error_text = """
 """
 
 data_notFound_text = "Данные не найдены! ❌"
+
+data_isInvalid_text = "Данные некорректны! Попробуйте ещё раз. ❌"
