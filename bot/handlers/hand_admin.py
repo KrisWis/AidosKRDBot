@@ -1,5 +1,5 @@
 from aiogram import types
-from InstanceBot import router
+from InstanceBot import router, bot
 from aiogram.filters import Command, StateFilter
 from utils import adminText, globalText
 from keyboards import adminKeyboards
@@ -7,9 +7,9 @@ from filters import AdminFilter
 from aiogram.fsm.context import FSMContext
 from database.orm import AsyncORM
 from helpers import Paginator
-import math
 from states.Admin import PreviousConcertsStates
 from typing import Union
+import re
 
 
 paginator = Paginator()
@@ -88,41 +88,42 @@ async def add_previous_concert(message: types.Message, album: list[types.Message
 
     photo = message.photo
     video = message.video
-    media_group_id = message.media_group_id
-    info_file_ids = []
+    photo_file_ids = []
+    video_file_ids = []
 
     data = await state.get_data()
 
-    if photo or video or media_group_id or user_text:
+    if photo or video or len(album) or user_text:
 
-        if photo:
-            photo = photo[-1]
-            info_file_ids.append(photo.file_id)
+        if not len(album):
+            if photo:
+                photo = photo[-1]
+                photo_file_ids.append(photo.file_id)
 
-        if video:
-            info_file_ids.append(video.file_id)
+            if video:
+                video_file_ids.append(video.file_id)
+        else:
+            for element in album:
+                if element.caption:
+                    user_text = element.caption
 
-        for element in album:
-            if element.caption:
-                user_text = element.caption
+                if element.photo:
+                    photo_file_ids.append(element.photo[-1].file_id)
 
-            if element.photo:
-                info_file_ids.append(element.photo[-1].file_id)
+                elif element.video:
+                    video_file_ids.append(element.video.file_id)
 
-            elif element.video:
-                info_file_ids.append(element.video.file_id)
+                else:
+                    current_state = await state.get_state()
 
-            else:
-                current_state = await state.get_state()
-
-                if current_state == PreviousConcertsStates.wait_info:
-                    await message.answer(globalText.data_isInvalid_text)
+                    if current_state == PreviousConcertsStates.wait_info:
+                        await message.answer(globalText.data_isInvalid_text)
 
         current_state = await state.get_state()
 
         if current_state == PreviousConcertsStates.wait_info:
             await state.set_state(None)
-            await AsyncORM.add_previous_concert(data["previous_concert_name"], user_text, info_file_ids)
+            await AsyncORM.add_previous_concert(data["previous_concert_name"], user_text, photo_file_ids, video_file_ids)
 
             await message.answer(adminText.add_previous_concert_success_text, reply_markup=await adminKeyboards.back_to_admin_menu_kb())
 
@@ -132,6 +133,42 @@ async def add_previous_concert(message: types.Message, album: list[types.Message
         if current_state == PreviousConcertsStates.wait_info:
             await message.answer(globalText.data_isInvalid_text)
 
+
+# Отправка сообщения с информацией о прошедшем концерте и возможностью удаления/изменения информации
+async def show_previous_concert(call: types.CallbackQuery, state: FSMContext) -> None:
+    user_id = call.from_user.id
+    message_id = call.message.message_id
+
+    await bot.delete_message(user_id, message_id)
+
+    temp = call.data.split("|")
+
+    previous_concert_id = int(temp[1])
+
+    previous_concert = await AsyncORM.get_previous_concert_by_id(previous_concert_id)
+
+    if previous_concert:
+        if previous_concert.photo_file_ids or previous_concert.video_file_ids:
+            media_group_elements = []
+
+            for photo_file_id in previous_concert.photo_file_ids:
+                media_group_elements.append(types.InputMediaPhoto(media=photo_file_id))
+
+            for video_file_id in previous_concert.video_file_ids:
+                media_group_elements.append(types.InputMediaVideo(media=video_file_id))
+
+            await call.message.answer_media_group(media_group_elements)
+
+        if previous_concert.info_text:
+            if not previous_concert.photo_file_ids and not previous_concert.video_file_ids:
+                await call.message.answer(adminText.show_previous_concert_text.format(previous_concert.name, previous_concert.info_text))
+            else:
+                await call.message.answer(adminText.show_previous_concert_withImages_text.format(previous_concert.name, previous_concert.info_text))
+
+        else:
+            await call.message.answer(adminText.show_previous_concert_withoutText_text.format(previous_concert.name))
+    else:
+        await call.message.answer(globalText.data_notFound_text)
 '''/Прошедшие концерты/'''
 
 
@@ -150,4 +187,7 @@ def hand_add():
     router.message.register(wait_previous_concert_info, StateFilter(PreviousConcertsStates.wait_name))
 
     router.message.register(add_previous_concert, StateFilter(PreviousConcertsStates.wait_info))
+
+    router.callback_query.register(show_previous_concert, lambda c: 
+    re.match(r"^previous_concerts\|(?P<previous_concert_id>\d+)$", c.data))
     '''/Прошедшие концерты/'''

@@ -108,6 +108,15 @@ class AsyncORM:
     '''PreviousConcertsORM'''
     # Получение прошедшего концерта по id
     @staticmethod
+    async def get_previous_concert_by_id(previous_concert_id: int) -> PreviousConcertsOrm:
+        async with async_session() as session:
+
+            result = await session.get(PreviousConcertsOrm, previous_concert_id)
+
+            return result
+        
+    # Получение прошедшего концерта по названию
+    @staticmethod
     async def get_previous_concert_by_name(name: str) -> PreviousConcertsOrm:
         async with async_session() as session:
 
@@ -120,9 +129,11 @@ class AsyncORM:
 
     # Добавление прошедшего концерта в базу данных
     @staticmethod
-    async def add_previous_concert(name: str, info_text: str, info_file_ids: list[str] = []) -> bool:
+    async def add_previous_concert(name: str, info_text: str, photo_file_ids: list[str] = [],
+        video_file_ids: list[str] = []) -> bool:
 
-        user = PreviousConcertsOrm(name=name, info_text=info_text, info_file_ids=info_file_ids)
+        user = PreviousConcertsOrm(name=name, info_text=info_text, photo_file_ids=photo_file_ids,
+        video_file_ids=video_file_ids)
 
         async with async_session() as session:
             session.add(user)
@@ -146,7 +157,8 @@ class AsyncORM:
 
     # Изменение информации о прошедшем концерте
     @staticmethod
-    async def change_previousConcert_info(id: int, name: str, info_text: str, info_file_ids: list[str] = []) -> bool:
+    async def change_previousConcert_info(id: int, name: str, info_text: str,
+        photo_file_ids: list[str] = [], video_file_ids: list[str] = []) -> bool:
 
         async with async_session() as session:
             result = await session.execute(select(PreviousConcertsOrm).where(PreviousConcertsOrm.id == id))
@@ -154,7 +166,8 @@ class AsyncORM:
 
             previousConcert.name = name
             previousConcert.info_text = info_text
-            previousConcert.info_file_ids = info_file_ids
+            previousConcert.photo_file_ids = photo_file_ids
+            previousConcert.video_file_ids = video_file_ids
 
             await session.commit()
                 

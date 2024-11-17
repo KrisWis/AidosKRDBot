@@ -27,7 +27,8 @@ class PreviousConcertsOrm(Base):
     id: Mapped[int] = mapped_column(BigInteger(), primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String())
     info_text: Mapped[str] = mapped_column(String())
-    info_file_ids: Mapped[list[str]] = mapped_column(ARRAY(String()), nullable=True)
+    photo_file_ids: Mapped[list[str]] = mapped_column(ARRAY(String()), nullable=True)
+    video_file_ids: Mapped[list[str]] = mapped_column(ARRAY(String()), nullable=True)
 
     __table_args__ = (
         UniqueConstraint('id', name='unique_concert'),
