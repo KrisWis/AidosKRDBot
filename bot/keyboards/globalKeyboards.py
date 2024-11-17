@@ -1,6 +1,7 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 
+'''Глобальное'''
 # Инлайн-клавиатура для начального меню
 async def start_menu_kb():
     kb = InlineKeyboardMarkup(inline_keyboard=[
@@ -12,3 +13,12 @@ async def start_menu_kb():
     [InlineKeyboardButton(text='📊 Статистика', callback_data='start|stats')]])
 
     return kb
+
+
+# Инлайн-клавиатура для перехода обратно в начальное меню
+async def back_to_start_menu_kb():
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='🔙 Обратно в меню', callback_data='start')]])
+
+    return kb
+'''/Глобальное/'''

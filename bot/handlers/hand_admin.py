@@ -8,37 +8,38 @@ from aiogram.fsm.context import FSMContext
 from database.orm import AsyncORM
 from helpers import Paginator
 from states.Admin import PreviousConcertsStates
-from typing import Union
 import re
-
-
-paginator = Paginator()
 
 '''Глобальное'''
 # Отправка админ-меню при вводе "/admin"
 async def admin(message: types.Message, state: FSMContext):
-    await message.answer(adminText.admin_menu_text, reply_markup=await adminKeyboards.admin_menu_kb())
+    first_name = message.from_user.first_name
+
+    await message.answer(adminText.admin_menu_text.format(first_name), reply_markup=await adminKeyboards.admin_menu_kb())
 
     await state.clear()
 
 
-# Открытие админ-меню с кнопки "Назад в админ меню"
+# Открытие админ-меню с кнопки "Обратно в админ-меню"
 async def admin_from_kb(call: types.CallbackQuery, state: FSMContext) -> None:
-    await call.message.edit_text(adminText.admin_menu_text, reply_markup=await adminKeyboards.admin_menu_kb())
+    first_name = call.from_user.first_name
+
+    await call.message.edit_text(adminText.admin_menu_text.format(first_name), reply_markup=await adminKeyboards.admin_menu_kb())
 
     await state.clear()
 '''/Глобальное/'''
 
 
 '''Прошедшие концерты'''
+admin_previous_concerts_paginator = Paginator()
 # Отправка сообщения со всеми прошедшими концертами
 async def send_previous_concerts(call: types.CallbackQuery) -> None:
     previous_concerts = await AsyncORM.get_previous_concerts()
         
     if len(previous_concerts):
-        prefix = "previous_concerts"
+        prefix = "admin_previous_concerts"
 
-        async def getPreviousConcertsButtonsAndAmount() -> Union[list[types.InlineKeyboardButton], int]:
+        async def getPreviousConcertsButtonsAndAmount():
             previous_concerts = await AsyncORM.get_previous_concerts()
 
             buttons = [[types.InlineKeyboardButton(text=f"{previous_concert.name}",
@@ -46,8 +47,8 @@ async def send_previous_concerts(call: types.CallbackQuery) -> None:
 
             return [buttons, len(previous_concerts)]
         
-        paginator_kb = await paginator.generate_paginator(adminText.previous_concerts_text,
-        getPreviousConcertsButtonsAndAmount, prefix, await adminKeyboards.get_previous_concert_kb_button())
+        paginator_kb = await admin_previous_concerts_paginator.generate_paginator(adminText.previous_concerts_text,
+        getPreviousConcertsButtonsAndAmount, prefix, [await adminKeyboards.get_previous_concert_kb_button()])
 
         await call.message.edit_text(adminText.previous_concerts_text, 
                 reply_markup=paginator_kb)
@@ -256,7 +257,7 @@ def hand_add():
     router.message.register(add_previous_concert, StateFilter(PreviousConcertsStates.wait_info))
 
     router.callback_query.register(show_previous_concert, lambda c: 
-    re.match(r"^previous_concerts\|(?P<previous_concert_id>\d+)$", c.data))
+    re.match(r"^admin_previous_concerts\|(?P<previous_concert_id>\d+)$", c.data))
 
     router.callback_query.register(previous_concert_actions, lambda c: 
     re.match(r"^previous_concerts\|(?P<previous_concert_id>\d+)\|(?P<action>replace|delete)$", c.data))

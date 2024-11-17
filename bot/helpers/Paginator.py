@@ -93,4 +93,4 @@ class Paginator:
             
         router.callback_query.register(page_action_paginator_handler,
         lambda c: 
-        re.match(r'^(?P<prefix>[^|]+)\|page\|(?P<current_page_index>\d+)\|(?P<action>prev|next)$', c.data))
+        re.match(fr'{prefix}\|page\|(?P<current_page_index>\d+)\|(?P<action>prev|next)$', c.data))
