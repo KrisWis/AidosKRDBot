@@ -9,6 +9,8 @@ from database.orm import AsyncORM
 from helpers import Paginator
 from states.Admin import PreviousConcertsStates
 import re
+import math
+
 
 '''Глобальное'''
 # Отправка админ-меню при вводе "/admin"
@@ -33,11 +35,13 @@ async def admin_from_kb(call: types.CallbackQuery, state: FSMContext) -> None:
 '''Прошедшие концерты'''
 admin_previous_concerts_paginator = Paginator()
 # Отправка сообщения со всеми прошедшими концертами
-async def send_previous_concerts(call: types.CallbackQuery) -> None:
+async def send_previous_concerts(call: types.CallbackQuery, state: FSMContext) -> None:
     previous_concerts = await AsyncORM.get_previous_concerts()
+    data = await state.get_data()
         
     if len(previous_concerts):
         prefix = "admin_previous_concerts"
+        items_per_page: int = 10
 
         async def getPreviousConcertsButtonsAndAmount():
             previous_concerts = await AsyncORM.get_previous_concerts()
@@ -48,9 +52,17 @@ async def send_previous_concerts(call: types.CallbackQuery) -> None:
             return [buttons, len(previous_concerts)]
         
         paginator_kb = await admin_previous_concerts_paginator.generate_paginator(adminText.previous_concerts_text,
-        getPreviousConcertsButtonsAndAmount, prefix, [await adminKeyboards.get_previous_concert_kb_button()])
+        getPreviousConcertsButtonsAndAmount, prefix,
+        [await adminKeyboards.get_previous_concert_kb_button(), 
+        await adminKeyboards.get_back_to_admin_menu_kb_button()], items_per_page=items_per_page)
 
-        await call.message.edit_text(adminText.previous_concerts_text, 
+        if "media_group_messages_ids" in data:
+            for media_group_message_id in data["media_group_messages_ids"]:
+                await bot.delete_message(call.from_user.id, media_group_message_id)
+                await state.clear()
+
+        pages_amount = math.ceil(len(previous_concerts) / items_per_page)
+        await call.message.edit_text(f"(1/{pages_amount}) " + adminText.previous_concerts_text, 
                 reply_markup=paginator_kb)
     else:
         await call.message.edit_text(globalText.data_notFound_text, reply_markup=await adminKeyboards.add_previous_concert_kb())
@@ -147,7 +159,7 @@ async def add_previous_concert(message: types.Message, album: list[types.Message
 
 
 # Отправка сообщения с информацией о прошедшем концерте и возможностью удаления/изменения информации
-async def show_previous_concert(call: types.CallbackQuery) -> None:
+async def show_previous_concert(call: types.CallbackQuery, state: FSMContext) -> None:
     user_id = call.from_user.id
     message_id = call.message.message_id
 
@@ -169,7 +181,10 @@ async def show_previous_concert(call: types.CallbackQuery) -> None:
             for video_file_id in previous_concert.video_file_ids:
                 media_group_elements.append(types.InputMediaVideo(media=video_file_id))
 
-            await call.message.answer_media_group(media_group_elements)
+            media_group_messages = await call.message.answer_media_group(media_group_elements)
+
+            await state.update_data(media_group_messages_ids=[media_group_message.message_id for media_group_message in media_group_messages])
+
 
         answer_message_text = adminText.show_previous_concert_withoutText_text.format(previous_concert.name)
 
@@ -231,11 +246,11 @@ async def previous_concert_delete_confirmation(call: types.CallbackQuery) -> Non
         await AsyncORM.delete_previous_concert(previous_concert_id)
 
         await call.message.edit_text(adminText.previous_concert_actions_delete_confirmation_yes_text.
-        format(previous_concert.name), reply_markup=await adminKeyboards.back_to_admin_menu_kb())
+        format(previous_concert.name), reply_markup=await adminKeyboards.back_to_previous_concerts_menu_kb())
 
     elif action == "no":
         await call.message.edit_text(adminText.previous_concert_actions_delete_confirmation_no_text.
-        format(previous_concert.name), reply_markup=await adminKeyboards.back_to_admin_menu_kb())
+        format(previous_concert.name), reply_markup=await adminKeyboards.back_to_previous_concerts_menu_kb())
 
 '''/Прошедшие концерты/'''
 

@@ -20,6 +20,13 @@ async def back_to_admin_menu_kb():
     [InlineKeyboardButton(text='🔙 Обратно в админ-меню', callback_data='admin')]])
 
     return kb
+
+
+# Получение кнопки из инлайн-клавиатуры для перехода обратно в админ-меню
+async def get_back_to_admin_menu_kb_button():
+    return InlineKeyboardButton(text='🔙 Обратно в админ-меню', callback_data='admin')
+
+
 '''/Глобальное/'''
 
 
@@ -50,6 +57,14 @@ async def previous_concert_delete_confirmation_kb(previous_concert_kb: int):
     kb = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Я понимаю, удалить', callback_data=f'previous_concerts|{previous_concert_kb}|delete|yes')],
     [InlineKeyboardButton(text='Отменить удаление', callback_data=f'previous_concerts|{previous_concert_kb}|delete|no')]])
+
+    return kb
+
+
+# Инлайн-клавиатура для перехода обратно в меню прошедших концертов
+async def back_to_previous_concerts_menu_kb():
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='🔙 Обратно в меню выбора', callback_data='admin|previous_concerts')]])
 
     return kb
 '''/Прошедшие концерты/'''

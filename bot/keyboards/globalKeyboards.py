@@ -15,10 +15,16 @@ async def start_menu_kb():
     return kb
 
 
-# Инлайн-клавиатура для перехода обратно в начальное меню
-async def back_to_start_menu_kb():
+# Инлайн-клавиатура для перехода обратно в меню прошедших концертов
+async def back_to_previous_concerts_menu_kb():
     kb = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='🔙 Обратно в меню', callback_data='start')]])
+    [InlineKeyboardButton(text='🔙 Обратно в меню выбора', callback_data='start|previous_concerts')]])
 
     return kb
+
+
+# Получение кнопки из инлайн-клавиатуры для перехода обратно в начальное меню
+async def get_back_to_start_menu_kb_button():
+    return InlineKeyboardButton(text='🔙 Обратно в меню', callback_data='start')
+
 '''/Глобальное/'''

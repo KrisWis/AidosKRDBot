@@ -14,12 +14,15 @@ class Paginator:
     # Генерация клавиатуры вместе с добавлением хендлера
     async def generate_paginator(self, text: str,
         getButtonsAndAmount: Callable[[], Awaitable[Union[list[InlineKeyboardButton], int]]],
-        prefix: str, extra_buttons: list[InlineKeyboardButton] = [], items_per_page: int = 10) -> InlineKeyboardMarkup:
+        prefix: str, extra_buttons: list[InlineKeyboardButton] = [], 
+        items_per_page: int = 10, extra_button_beforeActionsButtons: bool = True) -> InlineKeyboardMarkup:
         
-        paginator_kb = await self.paginator(getButtonsAndAmount, prefix, extra_buttons, items_per_page=items_per_page)
+        paginator_kb = await self.paginator(getButtonsAndAmount, prefix, extra_buttons,
+        items_per_page=items_per_page, extra_button_beforeActionsButtons=extra_button_beforeActionsButtons)
 
         if not self.handler_is_registered:
-            await self.page_action_paginator_handler_registrator(text, getButtonsAndAmount, prefix, extra_buttons, items_per_page)
+            await self.page_action_paginator_handler_registrator(text, getButtonsAndAmount,
+            prefix, extra_buttons, items_per_page, extra_button_beforeActionsButtons=extra_button_beforeActionsButtons)
             self.handler_is_registered = True
 
         return paginator_kb
@@ -29,7 +32,8 @@ class Paginator:
     @staticmethod
     async def paginator(getButtonsAndAmount: Callable[[], Awaitable[Union[list[InlineKeyboardButton], int]]],
         prefix: str,
-        extra_buttons: list[InlineKeyboardButton] = [], current_page_index: int = 0, items_per_page: int = 10) -> InlineKeyboardMarkup:
+        extra_buttons: list[InlineKeyboardButton] = [], current_page_index: int = 0,
+        items_per_page: int = 10, extra_button_beforeActionsButtons: bool = True) -> InlineKeyboardMarkup:
         inline_keyboard = []
 
         buttonsAndAmount = await getButtonsAndAmount()
@@ -53,11 +57,16 @@ class Paginator:
         if pages_amount > 1 and current_page_index < pages_amount - 1:
             action_kb_buttons.append(InlineKeyboardButton(text="➡️", callback_data=f"{prefix}|page|{current_page_index}|next"))
 
-        for extra_button in extra_buttons:
-            inline_keyboard.append([extra_button])
+        if extra_button_beforeActionsButtons:
+            for extra_button in extra_buttons:
+                inline_keyboard.append([extra_button])
 
         if len(action_kb_buttons):
             inline_keyboard.append(action_kb_buttons)
+        
+        if not extra_button_beforeActionsButtons:
+            for extra_button in extra_buttons:
+                inline_keyboard.append([extra_button])
 
         kb = InlineKeyboardMarkup(
         inline_keyboard=inline_keyboard)
@@ -68,7 +77,8 @@ class Paginator:
     # Хендлер для обработки страниц
     async def page_action_paginator_handler_registrator(self, text: str,
         getButtonsAndAmount: Callable[[], Awaitable[Union[list[InlineKeyboardButton], int]]],
-        prefix: str, extra_buttons: list[InlineKeyboardButton] = [], items_per_page: int = 10) -> None:
+        prefix: str, extra_buttons: list[InlineKeyboardButton] = [], items_per_page: int = 10,
+        extra_button_beforeActionsButtons: bool = True) -> None:
         async def page_action_paginator_handler(call: CallbackQuery) -> None:
 
             buttonsAndAmount = await getButtonsAndAmount()
@@ -89,7 +99,8 @@ class Paginator:
             pages_amount = math.ceil(items_amount / items_per_page)
 
             await call.message.edit_text(f"({page + 1}/{pages_amount}) " + text, 
-            reply_markup=await self.paginator(getButtonsAndAmount, prefix, extra_buttons, current_page_index=page, items_per_page=items_per_page))
+            reply_markup=await self.paginator(getButtonsAndAmount, prefix, extra_buttons, current_page_index=page,
+            items_per_page=items_per_page, extra_button_beforeActionsButtons=extra_button_beforeActionsButtons))
             
         router.callback_query.register(page_action_paginator_handler,
         lambda c: 
