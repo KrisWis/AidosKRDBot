@@ -10,6 +10,7 @@ from helpers import Paginator
 from states.Admin import PreviousConcertsStates
 import re
 import math
+import datetime
 
 
 '''Глобальное'''
@@ -106,6 +107,8 @@ async def add_previous_concert(message: types.Message, album: list[types.Message
 
     data = await state.get_data()
 
+    now = datetime.datetime.now()
+
     if photo or video or len(album) or user_text:
 
         if not len(album):
@@ -147,7 +150,7 @@ async def add_previous_concert(message: types.Message, album: list[types.Message
 
                 await message.answer(adminText.change_previous_concert_success_text.format(previous_concert.name), reply_markup=await adminKeyboards.back_to_admin_menu_kb())
             else:
-                await AsyncORM.add_previous_concert(data["previous_concert_name"], user_text, photo_file_ids, video_file_ids)
+                await AsyncORM.add_previous_concert(data["previous_concert_name"], user_text, now, photo_file_ids, video_file_ids)
 
                 await message.answer(adminText.add_previous_concert_success_text, reply_markup=await adminKeyboards.back_to_admin_menu_kb())
 

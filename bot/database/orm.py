@@ -129,10 +129,10 @@ class AsyncORM:
 
     # Добавление прошедшего концерта в базу данных
     @staticmethod
-    async def add_previous_concert(name: str, info_text: str, photo_file_ids: list[str] = [],
+    async def add_previous_concert(name: str, info_text: str, created_at: Date, photo_file_ids: list[str] = [],
         video_file_ids: list[str] = []) -> bool:
 
-        user = PreviousConcertsOrm(name=name, info_text=info_text, photo_file_ids=photo_file_ids,
+        user = PreviousConcertsOrm(name=name, info_text=info_text, created_at=created_at, photo_file_ids=photo_file_ids,
         video_file_ids=video_file_ids)
 
         async with async_session() as session:
@@ -149,7 +149,7 @@ class AsyncORM:
         
         async with async_session() as session:
             result = await session.execute(
-                select(PreviousConcertsOrm))
+                select(PreviousConcertsOrm).order_by(PreviousConcertsOrm.created_at.desc()))
             previous_concerts = result.scalars().all()
             
             return previous_concerts

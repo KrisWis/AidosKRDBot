@@ -27,6 +27,7 @@ class PreviousConcertsOrm(Base):
     id: Mapped[int] = mapped_column(BigInteger(), primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String())
     info_text: Mapped[str] = mapped_column(String())
+    created_at: Mapped[date] = mapped_column(nullable=False)
     photo_file_ids: Mapped[list[str]] = mapped_column(ARRAY(String()), nullable=True)
     video_file_ids: Mapped[list[str]] = mapped_column(ARRAY(String()), nullable=True)
 
