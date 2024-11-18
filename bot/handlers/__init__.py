@@ -1,2 +1,2 @@
-from handlers.admin import hand_admin, hand_admin_previous_concerts
+from handlers.admin import hand_admin, hand_admin_previous_concerts, hand_admin_future_concerts
 from handlers import hand_start

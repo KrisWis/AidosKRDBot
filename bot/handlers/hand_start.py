@@ -1,7 +1,7 @@
 from aiogram import types
 from InstanceBot import router
 from aiogram.filters import CommandStart, StateFilter
-from utils import globalText
+from utils import globalText, userPreviousConcertsText
 from keyboards import globalKeyboards
 from database.orm import AsyncORM
 from aiogram.fsm.context import FSMContext
@@ -80,7 +80,7 @@ async def send_previous_concerts(call: types.CallbackQuery, state: FSMContext) -
 
             return [buttons, len(previous_concerts)]
         
-        paginator_kb = await previous_concerts_paginator.generate_paginator(globalText.previous_concerts_text,
+        paginator_kb = await previous_concerts_paginator.generate_paginator(userPreviousConcertsText.previous_concerts_text,
         getPreviousConcertsButtonsAndAmount, prefix, [await globalKeyboards.get_back_to_start_menu_kb_button()],
         items_per_page=items_per_page, extra_button_beforeActionsButtons=False)
 
@@ -90,7 +90,7 @@ async def send_previous_concerts(call: types.CallbackQuery, state: FSMContext) -
                 await state.clear()
 
         pages_amount = math.ceil(len(previous_concerts) / items_per_page)
-        await call.message.edit_text(f"(1/{pages_amount}) " + globalText.previous_concerts_text,
+        await call.message.edit_text(f"(1/{pages_amount}) " + userPreviousConcertsText.previous_concerts_text,
                 reply_markup=paginator_kb)
     else:
         await call.message.edit_text(globalText.data_notFound_text)
@@ -123,17 +123,17 @@ async def show_previous_concert(call: types.CallbackQuery, state: FSMContext) ->
 
             await state.update_data(media_group_messages_ids=[media_group_message.message_id for media_group_message in media_group_messages])
 
-        answer_message_text = globalText.show_previous_concert_withoutText_text.format(previous_concert.name)
+        answer_message_text = userPreviousConcertsText.show_previous_concert_withoutText_text.format(previous_concert.name)
 
         if previous_concert.info_text:
             if not previous_concert.photo_file_ids and not previous_concert.video_file_ids:
-                answer_message_text = globalText.show_previous_concert_text.format(previous_concert.name, previous_concert.info_text)
+                answer_message_text = userPreviousConcertsText.show_previous_concert_text.format(previous_concert.name, previous_concert.info_text)
             else:
-                answer_message_text = globalText.show_previous_concert_withImages_text.format(previous_concert.name, previous_concert.info_text)
+                answer_message_text = userPreviousConcertsText.show_previous_concert_withImages_text.format(previous_concert.name, previous_concert.info_text)
 
         await call.message.answer(answer_message_text, reply_markup=await globalKeyboards.back_to_previous_concerts_menu_kb())
     else:
-        await call.message.answer(globalText.data_notFound_text)
+        await call.message.answer(userPreviousConcertsText.data_notFound_text)
 '''/Прошедшие концерты/'''
 
 

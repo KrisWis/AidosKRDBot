@@ -1,7 +1,7 @@
 from aiogram import types
 from InstanceBot import router, bot
 from aiogram.filters import StateFilter
-from utils import adminText, globalText
+from utils import globalText, adminPreviousConcertsText
 from keyboards import adminKeyboards
 from aiogram.fsm.context import FSMContext
 from database.orm import AsyncORM
@@ -10,6 +10,9 @@ from states.Admin import PreviousConcertsStates
 import re
 import math
 import datetime
+from helpers.AlbumInfoProcessor import AlbumInfoProcessor
+from RunBot import logger
+
 
 '''Прошедшие концерты'''
 admin_previous_concerts_paginator = Paginator()
@@ -30,7 +33,7 @@ async def send_previous_concerts(call: types.CallbackQuery, state: FSMContext) -
 
             return [buttons, len(previous_concerts)]
         
-        paginator_kb = await admin_previous_concerts_paginator.generate_paginator(adminText.previous_concerts_text,
+        paginator_kb = await admin_previous_concerts_paginator.generate_paginator(adminPreviousConcertsText.previous_concerts_text,
         getPreviousConcertsButtonsAndAmount, prefix,
         [await adminKeyboards.get_previous_concert_kb_button(), 
         await adminKeyboards.get_back_to_admin_menu_kb_button()], items_per_page=items_per_page)
@@ -41,7 +44,7 @@ async def send_previous_concerts(call: types.CallbackQuery, state: FSMContext) -
                 await state.clear()
 
         pages_amount = math.ceil(len(previous_concerts) / items_per_page)
-        await call.message.edit_text(f"(1/{pages_amount}) " + adminText.previous_concerts_text, 
+        await call.message.edit_text(f"(1/{pages_amount}) " + adminPreviousConcertsText.previous_concerts_text, 
                 reply_markup=paginator_kb)
     else:
         await call.message.edit_text(globalText.data_notFound_text, reply_markup=await adminKeyboards.add_previous_concert_kb())
@@ -49,12 +52,12 @@ async def send_previous_concerts(call: types.CallbackQuery, state: FSMContext) -
 
 # Отправка сообщения о том, чтобы администратор прислал название прошедшего концерта
 async def wait_previous_concert_name(call: types.CallbackQuery, state: FSMContext) -> None:
-    await call.message.edit_text(adminText.wait_previous_concert_name_text)
+    await call.message.edit_text(adminPreviousConcertsText.wait_previous_concert_name_text)
 
     await state.set_state(PreviousConcertsStates.wait_name)
 
 
-# Отправка сообщения о том, чтобы администратор прислал информацию о прошедшем концерте
+# Ожидание названия предстоящего концерта. Отправка сообщения о том, чтобы администратор прислал информацию о прошедшем концерте
 async def wait_previous_concert_info(message: types.Message, state: FSMContext):
     previous_concert_name = message.text
 
@@ -64,7 +67,7 @@ async def wait_previous_concert_info(message: types.Message, state: FSMContext):
         if not previous_concert:
             await state.update_data(previous_concert_name=previous_concert_name)
 
-            await message.answer(adminText.wait_previous_concert_info_text)
+            await message.answer(adminPreviousConcertsText.wait_previous_concert_info_text)
 
             await state.set_state(PreviousConcertsStates.wait_info)
 
@@ -74,70 +77,39 @@ async def wait_previous_concert_info(message: types.Message, state: FSMContext):
         await message.answer(globalText.data_isInvalid_text)
 
 
-# Добавление прошедшего концерта в базу данных
+# Ожидание информации предстоящего концерта. Добавление прошедшего концерта в базу данных
 async def add_previous_concert(message: types.Message, album: list[types.Message] = [], state: FSMContext = None):
-    user_text = message.text or message.caption or ""
+    result = await AlbumInfoProcessor(PreviousConcertsStates.wait_info, state, message, album)
 
-    photo = message.photo
-    video = message.video
-    photo_file_ids = []
-    video_file_ids = []
+    if not result:
+        await message.answer(globalText.data_isInvalid_text)
+        return
 
+    user_text = result[0]
+    photo_file_ids = result[1]
+    video_file_ids = result[2]
+    now = datetime.datetime.now()
     data = await state.get_data()
 
-    now = datetime.datetime.now()
+    if "previous_concert_replace_id" in data:
+        previous_concert_replace_id = int(data["previous_concert_replace_id"])
 
-    if photo or video or len(album) or user_text:
+        await AsyncORM.change_previousConcert_info(previous_concert_replace_id,
+        user_text, photo_file_ids, video_file_ids)
 
-        if not len(album):
-            if photo:
-                photo = photo[-1]
-                photo_file_ids.append(photo.file_id)
+        previous_concert = await AsyncORM.get_previous_concert_by_id(previous_concert_replace_id)
 
-            if video:
-                video_file_ids.append(video.file_id)
-        else:
-            for element in album:
-                if element.caption:
-                    user_text = element.caption
-
-                if element.photo:
-                    photo_file_ids.append(element.photo[-1].file_id)
-
-                elif element.video:
-                    video_file_ids.append(element.video.file_id)
-
-                else:
-                    current_state = await state.get_state()
-
-                    if current_state == PreviousConcertsStates.wait_info:
-                        await message.answer(globalText.data_isInvalid_text)
-
-        current_state = await state.get_state()
-
-        if current_state == PreviousConcertsStates.wait_info:
-            await state.set_state(None)
-
-            if "previous_concert_replace_id" in data:
-                previous_concert_replace_id = int(data["previous_concert_replace_id"])
-
-                await AsyncORM.change_previousConcert_info(previous_concert_replace_id,
-                user_text, photo_file_ids, video_file_ids)
-
-                previous_concert = await AsyncORM.get_previous_concert_by_id(previous_concert_replace_id)
-
-                await message.answer(adminText.change_previous_concert_success_text.format(previous_concert.name), reply_markup=await adminKeyboards.back_to_admin_menu_kb())
-            else:
-                await AsyncORM.add_previous_concert(data["previous_concert_name"], user_text, now, photo_file_ids, video_file_ids)
-
-                await message.answer(adminText.add_previous_concert_success_text, reply_markup=await adminKeyboards.back_to_admin_menu_kb())
-
+        await message.answer(adminPreviousConcertsText.change_previous_concert_success_text.format(previous_concert.name), reply_markup=await adminKeyboards.back_to_admin_menu_kb())
     else:
-        current_state = await state.get_state()
+        try:
+            await AsyncORM.add_previous_concert(data["previous_concert_name"], user_text, now, photo_file_ids, video_file_ids)
 
-        if current_state == PreviousConcertsStates.wait_info:
-            await message.answer(globalText.data_isInvalid_text)
+            await message.answer(adminPreviousConcertsText.add_previous_concert_success_text, reply_markup=await adminKeyboards.back_to_admin_menu_kb())
+        except Exception as e:
+            logger.info(e)
+            await message.answer(globalText.adding_data_error_text)
 
+    await state.clear()
 
 # Отправка сообщения с информацией о прошедшем концерте и возможностью удаления/изменения информации
 async def show_previous_concert(call: types.CallbackQuery, state: FSMContext) -> None:
@@ -167,13 +139,13 @@ async def show_previous_concert(call: types.CallbackQuery, state: FSMContext) ->
             await state.update_data(media_group_messages_ids=[media_group_message.message_id for media_group_message in media_group_messages])
 
 
-        answer_message_text = adminText.show_previous_concert_withoutText_text.format(previous_concert.name)
+        answer_message_text = adminPreviousConcertsText.show_previous_concert_withoutText_text.format(previous_concert.name)
 
         if previous_concert.info_text:
             if not previous_concert.photo_file_ids and not previous_concert.video_file_ids:
-                answer_message_text = adminText.show_previous_concert_text.format(previous_concert.name, previous_concert.info_text)
+                answer_message_text = adminPreviousConcertsText.show_previous_concert_text.format(previous_concert.name, previous_concert.info_text)
             else:
-                answer_message_text = adminText.show_previous_concert_withImages_text.format(previous_concert.name, previous_concert.info_text)
+                answer_message_text = adminPreviousConcertsText.show_previous_concert_withImages_text.format(previous_concert.name, previous_concert.info_text)
 
         await call.message.answer(answer_message_text,
         reply_markup=await adminKeyboards.previous_concert_actions_kb(previous_concert.id))
@@ -197,13 +169,13 @@ async def previous_concert_actions(call: types.CallbackQuery, state: FSMContext)
         return
     
     if action == "replace":
-        await call.message.edit_text(adminText.previous_concert_actions_edit_text)
+        await call.message.edit_text(adminPreviousConcertsText.previous_concert_actions_edit_text)
         await state.update_data(previous_concert_replace_id=previous_concert_id)
 
         await state.set_state(PreviousConcertsStates.wait_info)
 
     elif action == "delete":
-        await call.message.edit_text(adminText.previous_concert_actions_delete_confirmation_text.
+        await call.message.edit_text(adminPreviousConcertsText.previous_concert_actions_delete_confirmation_text.
         format(previous_concert.name),
         reply_markup=await adminKeyboards.previous_concert_delete_confirmation_kb(previous_concert.id))
 
@@ -226,11 +198,11 @@ async def previous_concert_delete_confirmation(call: types.CallbackQuery) -> Non
     if action == "yes":
         await AsyncORM.delete_previous_concert(previous_concert_id)
 
-        await call.message.edit_text(adminText.previous_concert_actions_delete_confirmation_yes_text.
+        await call.message.edit_text(adminPreviousConcertsText.previous_concert_actions_delete_confirmation_yes_text.
         format(previous_concert.name), reply_markup=await adminKeyboards.back_to_previous_concerts_menu_kb())
 
     elif action == "no":
-        await call.message.edit_text(adminText.previous_concert_actions_delete_confirmation_no_text.
+        await call.message.edit_text(adminPreviousConcertsText.previous_concert_actions_delete_confirmation_no_text.
         format(previous_concert.name), reply_markup=await adminKeyboards.back_to_previous_concerts_menu_kb())
 '''/Прошедшие концерты/'''
 

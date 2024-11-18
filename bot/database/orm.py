@@ -191,14 +191,28 @@ class AsyncORM:
     '''/PreviousConcertsORM/'''
 
     '''FutureConcertsORM'''
+    # Получение предстоящего концерта по названию
+    @staticmethod
+    async def get_future_concert_by_name(name: str) -> FutureConcertsOrm:
+        async with async_session() as session:
+
+            result = await session.execute(
+                select(FutureConcertsOrm).where(FutureConcertsOrm.name == name))
+            future_concert = result.scalar()
+            
+            return future_concert
+        
     # Получение информации об артисте предстоящего концерта по id концерта
     @staticmethod
     async def get_future_concert_artist_info_by_id(future_concert_id: int) -> FutureConcertsOrm:
         async with async_session() as session:
 
-            result = await session.get(FutureConcertsOrm.artist_info, future_concert_id)
-
-            return result
+            result: FutureConcertsOrm = await session.get(FutureConcertsOrm, future_concert_id)
+            
+            if result:
+                return [result.artist_info_text, result.artist_info_photo_file_ids, result.artist_info_video_file_ids]
+            
+            return False
         
 
     # Получение информации о площадке предстоящего концерта по id концерта
@@ -206,9 +220,12 @@ class AsyncORM:
     async def get_future_concert_platform_info_by_id(future_concert_id: int) -> FutureConcertsOrm:
         async with async_session() as session:
 
-            result = await session.get(FutureConcertsOrm.platform_info, future_concert_id)
-
-            return result
+            result: FutureConcertsOrm = await session.get(FutureConcertsOrm, future_concert_id)
+            
+            if result:
+                return [result.platform_info_text, result.platform_info_photo_file_ids, result.platform_info_video_file_ids]
+            
+            return False
         
 
     # Получение информации о времени проведения предстоящего концерта по id концерта
@@ -233,10 +250,15 @@ class AsyncORM:
 
     # Добавление предстоящего концерта в базу данных
     @staticmethod
-    async def add_future_concert(name: str, created_at: Date, artist_info: str,
-        platform_info: str, holding_time: Date, ticket_price: int) -> bool:
+    async def add_future_concert(name: str, created_at: Date, artist_info_text: str,
+        platform_info: str, holding_time: Date, ticket_price: int, artist_info_photo_file_ids: list[str] = [],
+        artist_info_video_file_ids: list[str] = [],
+        platform_info_photo_file_ids: list[str] = [],
+        platform_info_video_file_ids: list[str] = []) -> bool:
 
-        future_concert = FutureConcertsOrm(name=name, created_at=created_at, artist_info=artist_info,
+        future_concert = FutureConcertsOrm(name=name, created_at=created_at, artist_info_text=artist_info_text,
+        artist_info_photo_file_ids=artist_info_photo_file_ids, artist_info_video_file_ids=artist_info_video_file_ids,
+        platform_info_photo_file_ids=platform_info_photo_file_ids, platform_info_video_file_ids=platform_info_video_file_ids,
         platform_info=platform_info, holding_time=holding_time, ticket_price=ticket_price)
 
         async with async_session() as session:
