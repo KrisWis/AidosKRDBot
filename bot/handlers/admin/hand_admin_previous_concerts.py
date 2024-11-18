@@ -1,9 +1,8 @@
 from aiogram import types
 from InstanceBot import router, bot
-from aiogram.filters import Command, StateFilter
+from aiogram.filters import StateFilter
 from utils import adminText, globalText
 from keyboards import adminKeyboards
-from filters import AdminFilter
 from aiogram.fsm.context import FSMContext
 from database.orm import AsyncORM
 from helpers import Paginator
@@ -11,27 +10,6 @@ from states.Admin import PreviousConcertsStates
 import re
 import math
 import datetime
-
-
-'''Глобальное'''
-# Отправка админ-меню при вводе "/admin"
-async def admin(message: types.Message, state: FSMContext):
-    first_name = message.from_user.first_name
-
-    await message.answer(adminText.admin_menu_text.format(first_name), reply_markup=await adminKeyboards.admin_menu_kb())
-
-    await state.clear()
-
-
-# Открытие админ-меню с кнопки "Обратно в админ-меню"
-async def admin_from_kb(call: types.CallbackQuery, state: FSMContext) -> None:
-    first_name = call.from_user.first_name
-
-    await call.message.edit_text(adminText.admin_menu_text.format(first_name), reply_markup=await adminKeyboards.admin_menu_kb())
-
-    await state.clear()
-'''/Глобальное/'''
-
 
 '''Прошедшие концерты'''
 admin_previous_concerts_paginator = Paginator()
@@ -254,17 +232,10 @@ async def previous_concert_delete_confirmation(call: types.CallbackQuery) -> Non
     elif action == "no":
         await call.message.edit_text(adminText.previous_concert_actions_delete_confirmation_no_text.
         format(previous_concert.name), reply_markup=await adminKeyboards.back_to_previous_concerts_menu_kb())
-
 '''/Прошедшие концерты/'''
 
 
 def hand_add():
-    '''Глобальное'''
-    router.message.register(admin, StateFilter("*"), Command("admin"), AdminFilter())
-
-    router.callback_query.register(admin_from_kb, lambda c: c.data == 'admin')
-    '''/Глобальное/'''
-
     '''Прошедшие концерты'''
     router.callback_query.register(send_previous_concerts, lambda c: c.data == 'admin|previous_concerts')
 

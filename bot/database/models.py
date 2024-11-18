@@ -32,5 +32,22 @@ class PreviousConcertsOrm(Base):
     video_file_ids: Mapped[list[str]] = mapped_column(ARRAY(String()), nullable=True)
 
     __table_args__ = (
-        UniqueConstraint('id', name='unique_concert'),
+        UniqueConstraint('id', name='unique_previous_concert'),
+    )
+
+
+# Таблица c данными о предстоящих концертах
+class FutureConcertsOrm(Base):
+    __tablename__ = "future_concerts"
+    
+    id: Mapped[int] = mapped_column(BigInteger(), primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String())
+    created_at: Mapped[date] = mapped_column(nullable=False)
+    artist_info: Mapped[str] = mapped_column(String())
+    platform_info: Mapped[str] = mapped_column(String())
+    holding_time: Mapped[date] = mapped_column(nullable=False)
+    ticket_price: Mapped[int] = mapped_column(Integer())
+
+    __table_args__ = (
+        UniqueConstraint('id', name='unique_future_concert'),
     )

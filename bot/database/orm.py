@@ -1,5 +1,5 @@
 from sqlalchemy import *
-from database.models import UsersOrm, PreviousConcertsOrm
+from database.models import UsersOrm, PreviousConcertsOrm, FutureConcertsOrm
 from database.db import Base, engine, async_session, date
 from sqlalchemy.orm import joinedload
 from datetime import datetime, timedelta
@@ -132,11 +132,11 @@ class AsyncORM:
     async def add_previous_concert(name: str, info_text: str, created_at: Date, photo_file_ids: list[str] = [],
         video_file_ids: list[str] = []) -> bool:
 
-        user = PreviousConcertsOrm(name=name, info_text=info_text, created_at=created_at, photo_file_ids=photo_file_ids,
+        previous_concert = PreviousConcertsOrm(name=name, info_text=info_text, created_at=created_at, photo_file_ids=photo_file_ids,
         video_file_ids=video_file_ids)
 
         async with async_session() as session:
-            session.add(user)
+            session.add(previous_concert)
 
             await session.commit() 
 
@@ -189,3 +189,148 @@ class AsyncORM:
             return False
 
     '''/PreviousConcertsORM/'''
+
+    '''FutureConcertsORM'''
+    # Получение информации об артисте предстоящего концерта по id концерта
+    @staticmethod
+    async def get_future_concert_artist_info_by_id(future_concert_id: int) -> FutureConcertsOrm:
+        async with async_session() as session:
+
+            result = await session.get(FutureConcertsOrm.artist_info, future_concert_id)
+
+            return result
+        
+
+    # Получение информации о площадке предстоящего концерта по id концерта
+    @staticmethod
+    async def get_future_concert_platform_info_by_id(future_concert_id: int) -> FutureConcertsOrm:
+        async with async_session() as session:
+
+            result = await session.get(FutureConcertsOrm.platform_info, future_concert_id)
+
+            return result
+        
+
+    # Получение информации о времени проведения предстоящего концерта по id концерта
+    @staticmethod
+    async def get_future_concert_holding_time_by_id(future_concert_id: int) -> FutureConcertsOrm:
+        async with async_session() as session:
+
+            result = await session.get(FutureConcertsOrm.holding_time, future_concert_id)
+
+            return result
+        
+
+    # Получение информации о стоимость билета предстоящего концерта по id концерта
+    @staticmethod
+    async def get_future_concert_ticket_price_by_id(future_concert_id: int) -> FutureConcertsOrm:
+        async with async_session() as session:
+
+            result = await session.get(FutureConcertsOrm.ticket_price, future_concert_id)
+
+            return result
+        
+
+    # Добавление предстоящего концерта в базу данных
+    @staticmethod
+    async def add_future_concert(name: str, created_at: Date, artist_info: str,
+        platform_info: str, holding_time: Date, ticket_price: int) -> bool:
+
+        future_concert = FutureConcertsOrm(name=name, created_at=created_at, artist_info=artist_info,
+        platform_info=platform_info, holding_time=holding_time, ticket_price=ticket_price)
+
+        async with async_session() as session:
+            session.add(future_concert)
+
+            await session.commit() 
+
+        return True
+
+
+    # Получение всех предстоящих концертов
+    @staticmethod
+    async def get_future_concerts() -> list[FutureConcertsOrm]:
+        
+        async with async_session() as session:
+            result = await session.execute(
+                select(FutureConcertsOrm).order_by(FutureConcertsOrm.created_at.desc()))
+            future_concerts = result.scalars().all()
+            
+            return future_concerts
+        
+
+    # Изменение информации об артисте предстоящего концерта по id концерта
+    @staticmethod
+    async def change_futureConcert_artist_info(id: int, artist_info: str) -> bool:
+
+        async with async_session() as session:
+            result = await session.execute(select(FutureConcertsOrm).where(FutureConcertsOrm.id == id))
+            futureConcert: FutureConcertsOrm = result.scalar()
+
+            futureConcert.artist_info = artist_info
+
+            await session.commit()
+                
+        return True
+    
+
+    # Изменение информации о площадке предстоящего концерта по id концерта
+    @staticmethod
+    async def change_futureConcert_platform_info(id: int, platform_info: str) -> bool:
+
+        async with async_session() as session:
+            result = await session.execute(select(FutureConcertsOrm).where(FutureConcertsOrm.id == id))
+            futureConcert: FutureConcertsOrm = result.scalar()
+
+            futureConcert.platform_info = platform_info
+
+            await session.commit()
+                
+        return True
+    
+
+    # Изменение информации о времени проведения предстоящего концерта по id концерта
+    @staticmethod
+    async def change_futureConcert_holding_time(id: int, holding_time: date) -> bool:
+
+        async with async_session() as session:
+            result = await session.execute(select(FutureConcertsOrm).where(FutureConcertsOrm.id == id))
+            futureConcert: FutureConcertsOrm = result.scalar()
+
+            futureConcert.holding_time = holding_time
+
+            await session.commit()
+                
+        return True
+    
+
+    # Изменение информации о стоимости билета предстоящего концерта по id концерта
+    @staticmethod
+    async def change_futureConcert_ticket_price(id: int, ticket_price: int) -> bool:
+
+        async with async_session() as session:
+            result = await session.execute(select(FutureConcertsOrm).where(FutureConcertsOrm.id == id))
+            futureConcert: FutureConcertsOrm = result.scalar()
+
+            futureConcert.ticket_price = ticket_price
+
+            await session.commit()
+                
+        return True
+    
+
+    # Удаление предстоящего концерта по id
+    @staticmethod
+    async def delete_future_concert(id: int) -> FutureConcertsOrm:
+        async with async_session() as session:
+
+            result = await session.execute(select(FutureConcertsOrm).where(FutureConcertsOrm.id == id))
+            futureConcert: FutureConcertsOrm = result.scalar()
+            
+            if futureConcert:
+                await session.delete(futureConcert)
+                await session.commit()  
+                return True
+            
+            return False
+    '''/FutureConcertsORM/'''

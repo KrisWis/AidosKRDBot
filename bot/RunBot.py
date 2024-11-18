@@ -25,6 +25,8 @@ async def on_startup() -> None:
     handlers.hand_start.hand_add()
 
     handlers.hand_admin.hand_add()
+
+    handlers.hand_admin_previous_concerts.hand_add()
     
     bot_info = await bot.get_me()
 
