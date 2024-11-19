@@ -60,7 +60,6 @@ async def wait_future_concert_name(call: types.CallbackQuery, state: FSMContext)
 # Ожидание названия предстоящего концерта. Отправка сообщения о том, чтобы администратор прислал информацию о артисте предстоящего концерта
 async def wait_future_concert_artist_info(message: types.Message, state: FSMContext):
     future_concert_name = message.text
-
     if future_concert_name:
         future_concert = await AsyncORM.get_future_concert_by_name(future_concert_name)
 
@@ -89,6 +88,26 @@ async def wait_future_concert_platform_info(message: types.Message, album: list[
     photo_file_ids = result[1]
     video_file_ids = result[2]
 
+    data = await state.get_data()
+
+    if "future_concert_replace_id" in data:
+        future_concert_replace_id = int(data["future_concert_replace_id"])
+
+        future_concert = await AsyncORM.get_future_concert_by_id(future_concert_replace_id)
+
+        try:
+            await AsyncORM.change_futureConcert_artist_info(future_concert_replace_id, user_text,
+            photo_file_ids, video_file_ids)
+        except Exception as e:
+            logger.info(e)
+            await message.answer(globalText.adding_data_error_text)
+            return
+
+        await message.answer(adminFutureConcertsText.change_future_concert_artist_info_success_text
+        .format(future_concert.name), reply_markup=await adminKeyboards.back_to_admin_menu_kb())
+        await state.clear()
+        return
+
     await state.update_data(future_concert_artist_info_text=user_text)
     await state.update_data(future_concert_artist_info_photo_file_ids=photo_file_ids)
     await state.update_data(future_concert_artist_info_video_file_ids=video_file_ids)
@@ -109,6 +128,26 @@ async def wait_future_concert_holding_time(message: types.Message, album: list[t
     user_text = result[0]
     photo_file_ids = result[1]
     video_file_ids = result[2]
+
+    data = await state.get_data()
+
+    if "future_concert_replace_id" in data:
+        future_concert_replace_id = int(data["future_concert_replace_id"])
+
+        future_concert = await AsyncORM.get_future_concert_by_id(future_concert_replace_id)
+
+        try:
+            await AsyncORM.change_futureConcert_platform_info(future_concert_replace_id,
+            user_text, photo_file_ids, video_file_ids)
+        except Exception as e:
+            logger.info(e)
+            await message.answer(globalText.adding_data_error_text)
+            return
+
+        await message.answer(adminFutureConcertsText.change_future_concert_platform_info_success_text
+        .format(future_concert.name), reply_markup=await adminKeyboards.back_to_admin_menu_kb())
+        await state.clear()
+        return
 
     await state.update_data(future_concert_platform_info_text=user_text)
     await state.update_data(future_concert_platform_info_photo_file_ids=photo_file_ids)
@@ -131,6 +170,25 @@ async def wait_future_concert_ticket_price(message: types.Message, state: FSMCon
         if now >= future_concert_holding_time:
             await message.answer(globalText.date_inPastIsInvalid_text)
             return
+        
+        data = await state.get_data()
+
+        if "future_concert_replace_id" in data:
+            future_concert_replace_id = int(data["future_concert_replace_id"])
+
+            future_concert = await AsyncORM.get_future_concert_by_id(future_concert_replace_id)
+
+            try:
+                await AsyncORM.change_futureConcert_holding_time(future_concert_replace_id, future_concert_holding_time)
+            except Exception as e:
+                logger.info(e)
+                await message.answer(globalText.adding_data_error_text)
+                return
+
+            await message.answer(adminFutureConcertsText.change_future_concert_holding_time_success_text
+            .format(future_concert.name), reply_markup=await adminKeyboards.back_to_admin_menu_kb())
+            await state.clear()
+            return
 
         await state.update_data(future_concert_holding_time=future_concert_holding_time)
         
@@ -149,6 +207,24 @@ async def add_future_concert(message: types.Message, state: FSMContext) -> None:
     if future_concert_ticket_price.isdigit():
         future_concert_ticket_price = int(future_concert_ticket_price)
         data = await state.get_data()
+
+        if "future_concert_replace_id" in data:
+            future_concert_replace_id = int(data["future_concert_replace_id"])
+
+            future_concert = await AsyncORM.get_future_concert_by_id(future_concert_replace_id)
+
+            try:
+                await AsyncORM.change_futureConcert_ticket_price(future_concert_replace_id, future_concert_ticket_price)
+            except Exception as e:
+                logger.info(e)
+                await message.answer(globalText.adding_data_error_text)
+                return
+
+            await message.answer(adminFutureConcertsText.change_future_concert_ticket_price_success_text
+            .format(future_concert.name), reply_markup=await adminKeyboards.back_to_admin_menu_kb())
+            await state.clear()
+            return
+        
         now = datetime.datetime.now()
 
         try:
@@ -166,6 +242,180 @@ async def add_future_concert(message: types.Message, state: FSMContext) -> None:
 
     else:
         await message.answer(globalText.data_isInvalid_text)
+
+
+# Отправка сообщения с выбором какую информацию получить о предстоящем концерте
+async def choose_future_concert_info(call: types.CallbackQuery) -> None:
+    temp = call.data.split("|")
+
+    future_concert_id = int(temp[1])
+
+    future_concert = await AsyncORM.get_future_concert_artist_info_by_id(future_concert_id)
+
+    if future_concert:
+        await call.message.edit_text(adminFutureConcertsText.show_future_concert_choose_info_text,
+        reply_markup=await adminKeyboards.get_future_concert_info_kb(future_concert_id))
+    else:
+        await call.message.answer(globalText.data_notFound_text)
+
+
+# Отправка сообщения с информацией о предстоящем концерте
+async def show_future_concert_info(call: types.CallbackQuery, state: FSMContext) -> None:
+    temp = call.data.split("|")
+
+    future_concert_id = int(temp[2])
+
+    future_concert = await AsyncORM.get_future_concert_by_id(future_concert_id)
+
+    choosing_info = temp[3]
+    
+    if choosing_info == "artist":
+        artist_info = await AsyncORM.get_future_concert_artist_info_by_id(future_concert_id)
+
+        if artist_info[1] or artist_info[2]:
+            media_group_elements = []
+
+            for photo_file_id in artist_info[1]:
+                media_group_elements.append(types.InputMediaPhoto(media=photo_file_id))
+
+            for video_file_id in artist_info[2]:
+                media_group_elements.append(types.InputMediaVideo(media=video_file_id))
+
+            media_group_messages = await call.message.answer_media_group(media_group_elements)
+
+            await state.update_data(media_group_messages_ids=[media_group_message.message_id for media_group_message in media_group_messages])
+
+        answer_message_text = adminFutureConcertsText.show_future_concert_artist_info_withoutText_text.format(future_concert.name)
+
+        if artist_info[0]:
+            if not artist_info[1] and not artist_info[2]:
+                answer_message_text = adminFutureConcertsText.show_future_concert_artist_info_text.format(future_concert.name, artist_info[0])
+            else:
+                answer_message_text = adminFutureConcertsText.show_future_concert_artist_info_withImages_text.format(future_concert.name, artist_info[0])
+
+        await call.message.answer(answer_message_text,
+        reply_markup=await adminKeyboards.future_concert_actions_kb(future_concert_id, choosing_info))
+
+
+    elif choosing_info == "platform":
+        platform_info = await AsyncORM.get_future_concert_platform_info_by_id(future_concert_id)
+
+        if platform_info[1] or platform_info[2]:
+            media_group_elements = []
+
+            for photo_file_id in platform_info[1]:
+                media_group_elements.append(types.InputMediaPhoto(media=photo_file_id))
+
+            for video_file_id in platform_info[2]:
+                media_group_elements.append(types.InputMediaVideo(media=video_file_id))
+
+            media_group_messages = await call.message.answer_media_group(media_group_elements)
+
+            await state.update_data(media_group_messages_ids=[media_group_message.message_id for media_group_message in media_group_messages])
+
+        answer_message_text = adminFutureConcertsText.show_future_concert_platform_info_withoutText_text.format(future_concert.name)
+
+        if platform_info[0]:
+            if not platform_info[1] and not platform_info[2]:
+                answer_message_text = adminFutureConcertsText.show_future_concert_platform_info_text.format(future_concert.name, platform_info[0])
+            else:
+                answer_message_text = adminFutureConcertsText.show_future_concert_platform_info_withImages_text.format(future_concert.name, platform_info[0])
+
+        await call.message.answer(answer_message_text,
+        reply_markup=await adminKeyboards.future_concert_actions_kb(future_concert_id, choosing_info))
+
+    
+    elif choosing_info == "price":
+        ticket_price = await AsyncORM.get_future_concert_ticket_price_by_id(future_concert_id)
+
+        await call.message.edit_text(adminFutureConcertsText.show_future_concert_ticket_price_text.format(future_concert.name, ticket_price),
+        reply_markup=await adminKeyboards.future_concert_actions_kb(future_concert_id, choosing_info))
+
+
+    elif choosing_info == "time":
+        holding_time = await AsyncORM.get_future_concert_holding_time_by_id(future_concert_id)
+
+        formatted_time = holding_time.strftime("%d.%m.%Y %H:%M")
+
+        await call.message.edit_text(adminFutureConcertsText.show_future_concert_holding_time_text.format(future_concert.name, formatted_time),
+        reply_markup=await adminKeyboards.future_concert_actions_kb(future_concert_id, choosing_info))
+
+
+# Подтверждение удаления информации о предстоящем концерте
+async def confirm_delete_future_concert(call: types.CallbackQuery) -> None:
+
+    temp = call.data.split("|")
+
+    future_concert_id = int(temp[1])
+
+    future_concert = await AsyncORM.get_future_concert_by_id(future_concert_id)
+
+    if not future_concert:
+        await call.message.edit_text(globalText.data_notFound_text)
+        return
+
+    await call.message.edit_text(adminFutureConcertsText.future_concert_actions_delete_confirmation_text.
+    format(future_concert.name),
+    reply_markup=await adminKeyboards.future_concert_delete_confirmation_kb(future_concert.id))
+
+
+# Обработка подтверждения/отклонения удаления информации о предстоящем концерте
+async def future_concert_delete_confirmation(call: types.CallbackQuery) -> None:
+
+    temp = call.data.split("|")
+
+    future_concert_id = int(temp[1])
+
+    action = temp[3]
+
+    future_concert = await AsyncORM.get_future_concert_by_id(future_concert_id)
+
+    if not future_concert:
+        await call.message.edit_text(globalText.data_notFound_text)
+        return
+    
+    if action == "yes":
+        await AsyncORM.delete_future_concert(future_concert_id)
+
+        await call.message.edit_text(adminFutureConcertsText.future_concert_actions_delete_confirmation_yes_text.
+        format(future_concert.name), reply_markup=await adminKeyboards.back_to_future_concerts_menu_kb())
+
+    elif action == "no":
+        await call.message.edit_text(adminFutureConcertsText.future_concert_actions_delete_confirmation_no_text.
+        format(future_concert.name), reply_markup=await adminKeyboards.back_to_future_concerts_menu_kb())
+
+
+# Отправка сообщения с тем, чтобы пользователь прислал обновлённую информацию для замены конкретной информации предстоящего концерта
+async def replace_future_concert_info(call: types.CallbackQuery, state: FSMContext) -> None:
+    temp = call.data.split("|")
+
+    future_concert_id = int(temp[2])
+
+    choosing_info = temp[4]
+
+    print("REPLACE", choosing_info)
+
+    await state.update_data(future_concert_replace_id=future_concert_id)
+    
+    if choosing_info == "artist":
+        await call.message.edit_text(adminFutureConcertsText.edit_future_concert_artist_info_text)
+
+        await state.set_state(FutureConcertsStates.wait_artist_info)
+
+    elif choosing_info == "platform":
+        await call.message.edit_text(adminFutureConcertsText.edit_future_concert_platform_info_text)
+
+        await state.set_state(FutureConcertsStates.wait_platform_info)
+
+    elif choosing_info == "time":
+        await call.message.edit_text(adminFutureConcertsText.edit_future_concert_holding_time_text)
+
+        await state.set_state(FutureConcertsStates.wait_holding_time)
+
+    elif choosing_info == "price":
+        await call.message.edit_text(adminFutureConcertsText.edit_future_concert_ticket_price_text)
+
+        await state.set_state(FutureConcertsStates.wait_ticket_price)
 '''/Предстоящие концерты/'''
 
 
@@ -184,4 +434,19 @@ def hand_add():
     router.message.register(wait_future_concert_ticket_price, StateFilter(FutureConcertsStates.wait_holding_time))
 
     router.message.register(add_future_concert, StateFilter(FutureConcertsStates.wait_ticket_price))
+    
+    router.callback_query.register(choose_future_concert_info, lambda c: 
+    re.match(r"^admin_future_concerts\|(?P<future_concert_id>\d+)$", c.data))
+
+    router.callback_query.register(show_future_concert_info, lambda c: 
+    re.match(r"^admin\|future_concerts\|(?P<future_concert_id>\d+)\|(artist|platform|price|time)$", c.data))
+
+    router.callback_query.register(confirm_delete_future_concert, lambda c: 
+    re.match(r"^future_concerts\|(\d+)\|delete$", c.data))
+
+    router.callback_query.register(future_concert_delete_confirmation, lambda c: 
+    re.match(r"^future_concerts\|(?P<future_concert_id>\d+)\|delete\|(?P<choice>yes|no)$", c.data))
+
+    router.callback_query.register(replace_future_concert_info, lambda c: 
+    re.match(r"^admin\|future_concerts\|(\d+)\|replace\|(artist|platform|price|time)$", c.data))
     '''/Предстоящие концерты/'''

@@ -1,8 +1,8 @@
 from sqlalchemy import *
 from database.models import UsersOrm, PreviousConcertsOrm, FutureConcertsOrm
 from database.db import Base, engine, async_session, date
-from sqlalchemy.orm import joinedload
 from datetime import datetime, timedelta
+from typing import Union
 
 # Создаём класс для ORM
 class AsyncORM:
@@ -191,6 +191,18 @@ class AsyncORM:
     '''/PreviousConcertsORM/'''
 
     '''FutureConcertsORM'''
+    # Получение предстоящего концерта по id
+    @staticmethod
+    async def get_future_concert_by_id(id: int) -> FutureConcertsOrm:
+        async with async_session() as session:
+
+            result = await session.execute(
+                select(FutureConcertsOrm).where(FutureConcertsOrm.id == id))
+            future_concert = result.scalar()
+            
+            return future_concert
+        
+
     # Получение предстоящего концерта по названию
     @staticmethod
     async def get_future_concert_by_name(name: str) -> FutureConcertsOrm:
@@ -202,9 +214,10 @@ class AsyncORM:
             
             return future_concert
         
+        
     # Получение информации об артисте предстоящего концерта по id концерта
     @staticmethod
-    async def get_future_concert_artist_info_by_id(future_concert_id: int) -> FutureConcertsOrm:
+    async def get_future_concert_artist_info_by_id(future_concert_id: int) -> Union[str, list[str], list[str]]:
         async with async_session() as session:
 
             result: FutureConcertsOrm = await session.get(FutureConcertsOrm, future_concert_id)
@@ -217,7 +230,7 @@ class AsyncORM:
 
     # Получение информации о площадке предстоящего концерта по id концерта
     @staticmethod
-    async def get_future_concert_platform_info_by_id(future_concert_id: int) -> FutureConcertsOrm:
+    async def get_future_concert_platform_info_by_id(future_concert_id: int) -> Union[str, list[str], list[str]]:
         async with async_session() as session:
 
             result: FutureConcertsOrm = await session.get(FutureConcertsOrm, future_concert_id)
@@ -230,22 +243,22 @@ class AsyncORM:
 
     # Получение информации о времени проведения предстоящего концерта по id концерта
     @staticmethod
-    async def get_future_concert_holding_time_by_id(future_concert_id: int) -> FutureConcertsOrm:
+    async def get_future_concert_holding_time_by_id(future_concert_id: int) -> date:
         async with async_session() as session:
 
-            result = await session.get(FutureConcertsOrm.holding_time, future_concert_id)
+            result: FutureConcertsOrm = await session.get(FutureConcertsOrm, future_concert_id)
 
-            return result
+            return result.holding_time
         
 
     # Получение информации о стоимость билета предстоящего концерта по id концерта
     @staticmethod
-    async def get_future_concert_ticket_price_by_id(future_concert_id: int) -> FutureConcertsOrm:
+    async def get_future_concert_ticket_price_by_id(future_concert_id: int) -> int:
         async with async_session() as session:
 
-            result = await session.get(FutureConcertsOrm.ticket_price, future_concert_id)
+            result: FutureConcertsOrm = await session.get(FutureConcertsOrm, future_concert_id)
 
-            return result
+            return result.ticket_price
         
 
     # Добавление предстоящего концерта в базу данных
@@ -283,13 +296,16 @@ class AsyncORM:
 
     # Изменение информации об артисте предстоящего концерта по id концерта
     @staticmethod
-    async def change_futureConcert_artist_info(id: int, artist_info: str) -> bool:
+    async def change_futureConcert_artist_info(id: int, artist_info_text: str,
+        photo_file_ids: list[str], video_file_ids: list[str]) -> bool:
 
         async with async_session() as session:
             result = await session.execute(select(FutureConcertsOrm).where(FutureConcertsOrm.id == id))
             futureConcert: FutureConcertsOrm = result.scalar()
 
-            futureConcert.artist_info = artist_info
+            futureConcert.artist_info_text = artist_info_text
+            futureConcert.artist_info_photo_file_ids = photo_file_ids
+            futureConcert.artist_info_video_file_ids = video_file_ids
 
             await session.commit()
                 
@@ -298,13 +314,16 @@ class AsyncORM:
 
     # Изменение информации о площадке предстоящего концерта по id концерта
     @staticmethod
-    async def change_futureConcert_platform_info(id: int, platform_info: str) -> bool:
+    async def change_futureConcert_platform_info(id: int, platform_info_text: str,
+        photo_file_ids: list[str], video_file_ids: list[str]) -> bool:
 
         async with async_session() as session:
             result = await session.execute(select(FutureConcertsOrm).where(FutureConcertsOrm.id == id))
             futureConcert: FutureConcertsOrm = result.scalar()
 
-            futureConcert.platform_info = platform_info
+            futureConcert.platform_info_text = platform_info_text
+            futureConcert.platform_info_photo_file_ids = photo_file_ids
+            futureConcert.platform_info_video_file_ids = video_file_ids
 
             await session.commit()
                 
