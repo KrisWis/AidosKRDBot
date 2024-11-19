@@ -1,2 +1,3 @@
 from helpers.Paginator import Paginator
 from helpers.AlbumInfoProcessor import AlbumInfoProcessor
+from helpers.MediaGroupSender import MediaGroupSender

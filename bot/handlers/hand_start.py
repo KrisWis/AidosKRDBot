@@ -1,13 +1,13 @@
 from aiogram import types
 from InstanceBot import router
 from aiogram.filters import CommandStart, StateFilter
-from utils import globalText, userPreviousConcertsText
+from utils import globalText, userPreviousConcertsText, userFutureConcertsText
 from keyboards import globalKeyboards
 from database.orm import AsyncORM
 from aiogram.fsm.context import FSMContext
 import datetime
 from InstanceBot import bot
-from helpers import Paginator
+from helpers import Paginator, MediaGroupSender
 import re
 import math
 
@@ -110,18 +110,7 @@ async def show_previous_concert(call: types.CallbackQuery, state: FSMContext) ->
     previous_concert = await AsyncORM.get_previous_concert_by_id(previous_concert_id)
 
     if previous_concert:
-        if previous_concert.photo_file_ids or previous_concert.video_file_ids:
-            media_group_elements = []
-
-            for photo_file_id in previous_concert.photo_file_ids:
-                media_group_elements.append(types.InputMediaPhoto(media=photo_file_id))
-
-            for video_file_id in previous_concert.video_file_ids:
-                media_group_elements.append(types.InputMediaVideo(media=video_file_id))
-
-            media_group_messages = await call.message.answer_media_group(media_group_elements)
-
-            await state.update_data(media_group_messages_ids=[media_group_message.message_id for media_group_message in media_group_messages])
+        await MediaGroupSender(call, state, previous_concert.photo_file_ids, previous_concert.video_file_ids)
 
         answer_message_text = userPreviousConcertsText.show_previous_concert_withoutText_text.format(previous_concert.name)
 
@@ -137,6 +126,128 @@ async def show_previous_concert(call: types.CallbackQuery, state: FSMContext) ->
 '''/Прошедшие концерты/'''
 
 
+'''Предстоящие концерты'''
+future_concerts_paginator = Paginator()
+# Отправка сообщения со всеми предстоящими концертами
+async def send_future_concerts(call: types.CallbackQuery, state: FSMContext) -> None:
+    future_concerts = await AsyncORM.get_future_concerts()
+    data = await state.get_data()
+        
+    if len(future_concerts):
+        prefix = "future_concerts"
+        items_per_page: int = 10
+
+        async def getFutureConcertsButtonsAndAmount():
+            future_concerts = await AsyncORM.get_future_concerts()
+
+            buttons = [[types.InlineKeyboardButton(text=f"{future_concert.name}",
+            callback_data=f'{prefix}|{future_concert.id}')] for future_concert in future_concerts]
+
+            return [buttons, len(future_concerts)]
+        
+        paginator_kb = await future_concerts_paginator.generate_paginator(userFutureConcertsText.future_concerts_text,
+        getFutureConcertsButtonsAndAmount, prefix, [await globalKeyboards.get_back_to_start_menu_kb_button()],
+        items_per_page=items_per_page, extra_button_beforeActionsButtons=False)
+
+        if "media_group_messages_ids" in data:
+            for media_group_message_id in data["media_group_messages_ids"]:
+                await bot.delete_message(call.from_user.id, media_group_message_id)
+                await state.clear()
+
+        pages_amount = math.ceil(len(future_concerts) / items_per_page)
+        await call.message.edit_text(f"(1/{pages_amount}) " + userFutureConcertsText.future_concerts_text,
+                reply_markup=paginator_kb)
+    else:
+        await call.message.edit_text(globalText.data_notFound_text)
+
+
+# Отправка сообщения с выбором какую информацию получить о предстоящем концерте
+async def choose_future_concert_info(call: types.CallbackQuery, state: FSMContext) -> None:
+    temp = call.data.split("|")
+
+    future_concert_id = int(temp[1])
+
+    future_concert = await AsyncORM.get_future_concert_artist_info_by_id(future_concert_id)
+
+    if future_concert:
+        data = await state.get_data()
+
+        if "media_group_messages_ids" in data:
+            for media_group_message_id in data["media_group_messages_ids"]:
+                await bot.delete_message(call.from_user.id, media_group_message_id)
+                await state.clear()
+
+        await call.message.edit_text(userFutureConcertsText.show_future_concert_choose_info_text,
+        reply_markup=await globalKeyboards.get_future_concert_info_kb(future_concert_id))
+    else:
+        await call.message.answer(globalText.data_notFound_text)
+
+
+# Отправка сообщения с информацией о предстоящем концерте
+async def show_future_concert_info(call: types.CallbackQuery, state: FSMContext) -> None:
+    user_id = call.from_user.id
+    message_id = call.message.message_id
+
+    await bot.delete_message(user_id, message_id)
+
+    temp = call.data.split("|")
+
+    future_concert_id = int(temp[2])
+
+    future_concert = await AsyncORM.get_future_concert_by_id(future_concert_id)
+
+    choosing_info = temp[3]
+    
+    if choosing_info == "artist":
+        artist_info = await AsyncORM.get_future_concert_artist_info_by_id(future_concert_id)
+
+        await MediaGroupSender(call, state, artist_info[1], artist_info[2])
+        
+        answer_message_text = userFutureConcertsText.show_future_concert_artist_info_withoutText_text.format(future_concert.name)
+
+        if artist_info[0]:
+            if not artist_info[1] and not artist_info[2]:
+                answer_message_text = userFutureConcertsText.show_future_concert_artist_info_text.format(future_concert.name, artist_info[0])
+            else:
+                answer_message_text = userFutureConcertsText.show_future_concert_artist_info_withImages_text.format(future_concert.name, artist_info[0])
+
+        await call.message.answer(answer_message_text,
+        reply_markup=await globalKeyboards.back_to_future_concert_choose_kb(future_concert_id))
+
+    elif choosing_info == "platform":
+        platform_info = await AsyncORM.get_future_concert_platform_info_by_id(future_concert_id)
+
+        await MediaGroupSender(call, state, platform_info[1], platform_info[2])
+
+        answer_message_text = userFutureConcertsText.show_future_concert_platform_info_withoutText_text.format(future_concert.name)
+
+        if platform_info[0]:
+            if not platform_info[1] and not platform_info[2]:
+                answer_message_text = userFutureConcertsText.show_future_concert_platform_info_text.format(future_concert.name, platform_info[0])
+            else:
+                answer_message_text = userFutureConcertsText.show_future_concert_platform_info_withImages_text.format(future_concert.name, platform_info[0])
+
+        await call.message.answer(answer_message_text,
+        reply_markup=await globalKeyboards.back_to_future_concert_choose_kb(future_concert_id))
+    
+    elif choosing_info == "price":
+        ticket_price = await AsyncORM.get_future_concert_ticket_price_by_id(future_concert_id)
+
+        await call.message.answer(userFutureConcertsText.show_future_concert_ticket_price_text.
+        format(future_concert.name, ticket_price), reply_markup=await globalKeyboards.back_to_future_concert_choose_kb(future_concert_id))
+
+
+    elif choosing_info == "time":
+        holding_time = await AsyncORM.get_future_concert_holding_time_by_id(future_concert_id)
+
+        formatted_time = holding_time.strftime("%d.%m.%Y %H:%M")
+
+        await call.message.answer(userFutureConcertsText.show_future_concert_holding_time_text.
+        format(future_concert.name, formatted_time), reply_markup=await globalKeyboards.back_to_future_concert_choose_kb(future_concert_id))
+'''/Предстоящие концерты/'''
+
+
+
 def hand_add():
     '''Глобальное'''
     router.message.register(start, StateFilter("*"), CommandStart())
@@ -150,3 +261,13 @@ def hand_add():
     router.callback_query.register(show_previous_concert, lambda c: 
     re.match(r"^previous_concerts\|(?P<previous_concert_id>\d+)$", c.data))
     '''/Прошедшие концерты/'''
+
+    '''Предстоящие концерты'''
+    router.callback_query.register(send_future_concerts, lambda c: c.data == 'start|future_concerts')
+    
+    router.callback_query.register(choose_future_concert_info, lambda c: 
+    re.match(r"^future_concerts\|(?P<future_concert_id>\d+)$", c.data))
+
+    router.callback_query.register(show_future_concert_info, lambda c: 
+    re.match(r"^start\|future_concerts\|(?P<future_concert_id>\d+)\|(artist|platform|price|time)$", c.data))
+    '''/Предстоящие концерты/'''

@@ -13,6 +13,11 @@ async def AlbumInfoProcessor(current_state: State, state: FSMContext, message: M
     photo_file_ids = []
     video_file_ids = []
 
+    if not photo and not video and not len(album) and message.caption:
+        await message.answer(globalText.data_isInvalid_text)
+            
+        return False
+    
     if photo or video or len(album) or user_text:
 
         if not len(album):
@@ -38,6 +43,8 @@ async def AlbumInfoProcessor(current_state: State, state: FSMContext, message: M
 
                     if current_state == current_state:
                         await message.answer(globalText.data_isInvalid_text)
+
+                    return False
 
         current_state = await state.get_state()
 

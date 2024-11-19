@@ -264,7 +264,7 @@ class AsyncORM:
     # Добавление предстоящего концерта в базу данных
     @staticmethod
     async def add_future_concert(name: str, created_at: Date, artist_info_text: str,
-        platform_info: str, holding_time: Date, ticket_price: int, artist_info_photo_file_ids: list[str] = [],
+        platform_info_text: str, holding_time: Date, ticket_price: int, artist_info_photo_file_ids: list[str] = [],
         artist_info_video_file_ids: list[str] = [],
         platform_info_photo_file_ids: list[str] = [],
         platform_info_video_file_ids: list[str] = []) -> bool:
@@ -272,7 +272,7 @@ class AsyncORM:
         future_concert = FutureConcertsOrm(name=name, created_at=created_at, artist_info_text=artist_info_text,
         artist_info_photo_file_ids=artist_info_photo_file_ids, artist_info_video_file_ids=artist_info_video_file_ids,
         platform_info_photo_file_ids=platform_info_photo_file_ids, platform_info_video_file_ids=platform_info_video_file_ids,
-        platform_info=platform_info, holding_time=holding_time, ticket_price=ticket_price)
+        platform_info_text=platform_info_text, holding_time=holding_time, ticket_price=ticket_price)
 
         async with async_session() as session:
             session.add(future_concert)

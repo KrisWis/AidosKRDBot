@@ -10,7 +10,7 @@ from states.Admin import PreviousConcertsStates
 import re
 import math
 import datetime
-from helpers.AlbumInfoProcessor import AlbumInfoProcessor
+from helpers import AlbumInfoProcessor, MediaGroupSender
 from RunBot import logger
 
 
@@ -125,19 +125,7 @@ async def show_previous_concert(call: types.CallbackQuery, state: FSMContext) ->
     previous_concert = await AsyncORM.get_previous_concert_by_id(previous_concert_id)
 
     if previous_concert:
-        if previous_concert.photo_file_ids or previous_concert.video_file_ids:
-            media_group_elements = []
-
-            for photo_file_id in previous_concert.photo_file_ids:
-                media_group_elements.append(types.InputMediaPhoto(media=photo_file_id))
-
-            for video_file_id in previous_concert.video_file_ids:
-                media_group_elements.append(types.InputMediaVideo(media=video_file_id))
-
-            media_group_messages = await call.message.answer_media_group(media_group_elements)
-
-            await state.update_data(media_group_messages_ids=[media_group_message.message_id for media_group_message in media_group_messages])
-
+        await MediaGroupSender(call, state, previous_concert.photo_file_ids, previous_concert.video_file_ids)
 
         answer_message_text = adminPreviousConcertsText.show_previous_concert_withoutText_text.format(previous_concert.name)
 

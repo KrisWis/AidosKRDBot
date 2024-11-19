@@ -52,7 +52,6 @@ class FutureConcertsOrm(Base):
     platform_info_photo_file_ids: Mapped[list[str]] = mapped_column(ARRAY(String()), nullable=True)
     platform_info_video_file_ids: Mapped[list[str]] = mapped_column(ARRAY(String()), nullable=True)
 
-    platform_info: Mapped[str] = mapped_column(String())
     holding_time: Mapped[date] = mapped_column(nullable=False)
     ticket_price: Mapped[int] = mapped_column(Integer())
 

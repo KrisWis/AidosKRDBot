@@ -28,3 +28,24 @@ async def get_back_to_start_menu_kb_button():
     return InlineKeyboardButton(text='🔙 Обратно в меню', callback_data='start')
 
 '''/Глобальное/'''
+
+
+'''Предстоящие концерты'''
+# Клавиатура для с кнопками для получения информации о предстоящем концерте
+async def get_future_concert_info_kb(future_concert_id: int):
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='🧑‍🎤 Информация об артисте', callback_data=f'start|future_concerts|{future_concert_id}|artist'),
+    InlineKeyboardButton(text='🎵 Информация о площадке', callback_data=f'start|future_concerts|{future_concert_id}|platform')],
+    [InlineKeyboardButton(text='🕰 Время проведения', callback_data=f'start|future_concerts|{future_concert_id}|time'),
+    InlineKeyboardButton(text='🎟 Стоимость билета', callback_data=f'start|future_concerts|{future_concert_id}|price')]])
+
+    return kb
+
+
+# Инлайн-клавиатура для возврата обратно в меню выбора
+async def back_to_future_concert_choose_kb(future_concert_id: int):
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='🔙 Обратно в меню выбора', callback_data=f'future_concerts|{future_concert_id}')]])
+
+    return kb
+'''/Предстоящие концерты/'''
