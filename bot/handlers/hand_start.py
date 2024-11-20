@@ -1,7 +1,7 @@
 from aiogram import types
 from InstanceBot import router
 from aiogram.filters import CommandStart, StateFilter
-from utils import globalText, userPreviousConcertsText, userFutureConcertsText
+from utils import globalTexts, userPreviousConcertsTexts, userFutureConcertsTexts
 from keyboards import globalKeyboards
 from database.orm import AsyncORM
 from aiogram.fsm.context import FSMContext
@@ -28,7 +28,7 @@ async def start(message: types.Message, state: FSMContext):
 
                 await bot.send_message(
                     chat_id=referer_id,
-                    text=globalText.new_referal_text.format(username)
+                    text=globalTexts.new_referal_text.format(username)
                 )
 
                 referer_id = int(referer_id)  
@@ -42,10 +42,10 @@ async def start(message: types.Message, state: FSMContext):
         )
 
         if not result:
-            await message.answer(globalText.adding_data_error_text)
+            await message.answer(globalTexts.adding_data_error_text)
             return
 
-    await message.answer(globalText.start_menu_text.format(first_name), 
+    await message.answer(globalTexts.start_menu_text.format(first_name), 
                 reply_markup=await globalKeyboards.start_menu_kb())
     await state.clear()
 
@@ -54,7 +54,7 @@ async def start(message: types.Message, state: FSMContext):
 async def start_from_kb(call: types.CallbackQuery, state: FSMContext) -> None:
     first_name = call.from_user.first_name
 
-    await call.message.edit_text(globalText.start_menu_text.format(first_name),
+    await call.message.edit_text(globalTexts.start_menu_text.format(first_name),
     reply_markup=await globalKeyboards.start_menu_kb())
 
     await state.clear()
@@ -80,7 +80,7 @@ async def send_previous_concerts(call: types.CallbackQuery, state: FSMContext) -
 
             return [buttons, len(previous_concerts)]
         
-        paginator_kb = await previous_concerts_paginator.generate_paginator(userPreviousConcertsText.previous_concerts_text,
+        paginator_kb = await previous_concerts_paginator.generate_paginator(userPreviousConcertsTexts.previous_concerts_text,
         getPreviousConcertsButtonsAndAmount, prefix, [await globalKeyboards.get_back_to_start_menu_kb_button()],
         items_per_page=items_per_page, extra_button_beforeActionsButtons=False)
 
@@ -90,10 +90,10 @@ async def send_previous_concerts(call: types.CallbackQuery, state: FSMContext) -
                 await state.clear()
 
         pages_amount = math.ceil(len(previous_concerts) / items_per_page)
-        await call.message.edit_text(f"(1/{pages_amount}) " + userPreviousConcertsText.previous_concerts_text,
+        await call.message.edit_text(f"(1/{pages_amount}) " + userPreviousConcertsTexts.previous_concerts_text,
                 reply_markup=paginator_kb)
     else:
-        await call.message.edit_text(globalText.data_notFound_text)
+        await call.message.edit_text(globalTexts.data_notFound_text)
 
 
 # Отправка сообщения с информацией о прошедшем концерте
@@ -112,17 +112,17 @@ async def show_previous_concert(call: types.CallbackQuery, state: FSMContext) ->
     if previous_concert:
         await MediaGroupSender(call, state, previous_concert.photo_file_ids, previous_concert.video_file_ids)
 
-        answer_message_text = userPreviousConcertsText.show_previous_concert_withoutText_text.format(previous_concert.name)
+        answer_message_text = userPreviousConcertsTexts.show_previous_concert_withoutText_text.format(previous_concert.name)
 
         if previous_concert.info_text:
             if not previous_concert.photo_file_ids and not previous_concert.video_file_ids:
-                answer_message_text = userPreviousConcertsText.show_previous_concert_text.format(previous_concert.name, previous_concert.info_text)
+                answer_message_text = userPreviousConcertsTexts.show_previous_concert_text.format(previous_concert.name, previous_concert.info_text)
             else:
-                answer_message_text = userPreviousConcertsText.show_previous_concert_withImages_text.format(previous_concert.name, previous_concert.info_text)
+                answer_message_text = userPreviousConcertsTexts.show_previous_concert_withImages_text.format(previous_concert.name, previous_concert.info_text)
 
         await call.message.answer(answer_message_text, reply_markup=await globalKeyboards.back_to_previous_concerts_menu_kb())
     else:
-        await call.message.answer(userPreviousConcertsText.data_notFound_text)
+        await call.message.answer(userPreviousConcertsTexts.data_notFound_text)
 '''/Прошедшие концерты/'''
 
 
@@ -145,7 +145,7 @@ async def send_future_concerts(call: types.CallbackQuery, state: FSMContext) -> 
 
             return [buttons, len(future_concerts)]
         
-        paginator_kb = await future_concerts_paginator.generate_paginator(userFutureConcertsText.future_concerts_text,
+        paginator_kb = await future_concerts_paginator.generate_paginator(userFutureConcertsTexts.future_concerts_text,
         getFutureConcertsButtonsAndAmount, prefix, [await globalKeyboards.get_back_to_start_menu_kb_button()],
         items_per_page=items_per_page, extra_button_beforeActionsButtons=False)
 
@@ -155,10 +155,10 @@ async def send_future_concerts(call: types.CallbackQuery, state: FSMContext) -> 
                 await state.clear()
 
         pages_amount = math.ceil(len(future_concerts) / items_per_page)
-        await call.message.edit_text(f"(1/{pages_amount}) " + userFutureConcertsText.future_concerts_text,
+        await call.message.edit_text(f"(1/{pages_amount}) " + userFutureConcertsTexts.future_concerts_text,
                 reply_markup=paginator_kb)
     else:
-        await call.message.edit_text(globalText.data_notFound_text)
+        await call.message.edit_text(globalTexts.data_notFound_text)
 
 
 # Отправка сообщения с выбором какую информацию получить о предстоящем концерте
@@ -177,10 +177,10 @@ async def choose_future_concert_info(call: types.CallbackQuery, state: FSMContex
                 await bot.delete_message(call.from_user.id, media_group_message_id)
                 await state.clear()
 
-        await call.message.edit_text(userFutureConcertsText.show_future_concert_choose_info_text,
+        await call.message.edit_text(userFutureConcertsTexts.show_future_concert_choose_info_text,
         reply_markup=await globalKeyboards.get_future_concert_info_kb(future_concert_id))
     else:
-        await call.message.answer(globalText.data_notFound_text)
+        await call.message.answer(globalTexts.data_notFound_text)
 
 
 # Отправка сообщения с информацией о предстоящем концерте
@@ -203,13 +203,13 @@ async def show_future_concert_info(call: types.CallbackQuery, state: FSMContext)
 
         await MediaGroupSender(call, state, artist_info[1], artist_info[2])
         
-        answer_message_text = userFutureConcertsText.show_future_concert_artist_info_withoutText_text.format(future_concert.name)
+        answer_message_text = userFutureConcertsTexts.show_future_concert_artist_info_withoutText_text
 
         if artist_info[0]:
             if not artist_info[1] and not artist_info[2]:
-                answer_message_text = userFutureConcertsText.show_future_concert_artist_info_text.format(future_concert.name, artist_info[0])
+                answer_message_text = userFutureConcertsTexts.show_future_concert_artist_info_text.format(artist_info[0])
             else:
-                answer_message_text = userFutureConcertsText.show_future_concert_artist_info_withImages_text.format(future_concert.name, artist_info[0])
+                answer_message_text = userFutureConcertsTexts.show_future_concert_artist_info_withImages_text.format(artist_info[0])
 
         await call.message.answer(answer_message_text,
         reply_markup=await globalKeyboards.back_to_future_concert_choose_kb(future_concert_id))
@@ -219,13 +219,13 @@ async def show_future_concert_info(call: types.CallbackQuery, state: FSMContext)
 
         await MediaGroupSender(call, state, platform_info[1], platform_info[2])
 
-        answer_message_text = userFutureConcertsText.show_future_concert_platform_info_withoutText_text.format(future_concert.name)
+        answer_message_text = userFutureConcertsTexts.show_future_concert_platform_info_withoutText_text
 
         if platform_info[0]:
             if not platform_info[1] and not platform_info[2]:
-                answer_message_text = userFutureConcertsText.show_future_concert_platform_info_text.format(future_concert.name, platform_info[0])
+                answer_message_text = userFutureConcertsTexts.show_future_concert_platform_info_text.format(platform_info[0])
             else:
-                answer_message_text = userFutureConcertsText.show_future_concert_platform_info_withImages_text.format(future_concert.name, platform_info[0])
+                answer_message_text = userFutureConcertsTexts.show_future_concert_platform_info_withImages_text.format(platform_info[0])
 
         await call.message.answer(answer_message_text,
         reply_markup=await globalKeyboards.back_to_future_concert_choose_kb(future_concert_id))
@@ -233,8 +233,8 @@ async def show_future_concert_info(call: types.CallbackQuery, state: FSMContext)
     elif choosing_info == "price":
         ticket_price = await AsyncORM.get_future_concert_ticket_price_by_id(future_concert_id)
 
-        await call.message.answer(userFutureConcertsText.show_future_concert_ticket_price_text.
-        format(future_concert.name, ticket_price), reply_markup=await globalKeyboards.back_to_future_concert_choose_kb(future_concert_id))
+        await call.message.answer(userFutureConcertsTexts.show_future_concert_ticket_price_text.
+        format(ticket_price), reply_markup=await globalKeyboards.back_to_future_concert_choose_kb(future_concert_id))
 
 
     elif choosing_info == "time":
@@ -242,8 +242,8 @@ async def show_future_concert_info(call: types.CallbackQuery, state: FSMContext)
 
         formatted_time = holding_time.strftime("%d.%m.%Y %H:%M")
 
-        await call.message.answer(userFutureConcertsText.show_future_concert_holding_time_text.
-        format(future_concert.name, formatted_time), reply_markup=await globalKeyboards.back_to_future_concert_choose_kb(future_concert_id))
+        await call.message.answer(userFutureConcertsTexts.show_future_concert_holding_time_text.
+        format(formatted_time), reply_markup=await globalKeyboards.back_to_future_concert_choose_kb(future_concert_id))
 '''/Предстоящие концерты/'''
 
 

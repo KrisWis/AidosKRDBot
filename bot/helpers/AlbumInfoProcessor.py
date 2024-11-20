@@ -1,7 +1,7 @@
 from aiogram.types import Message
 from aiogram.fsm.state import State
 from aiogram.fsm.context import FSMContext
-from utils import globalText
+from utils import globalTexts
 from typing import Union
 
 async def AlbumInfoProcessor(current_state: State, state: FSMContext, message: Message,
@@ -14,7 +14,7 @@ async def AlbumInfoProcessor(current_state: State, state: FSMContext, message: M
     video_file_ids = []
 
     if not photo and not video and not len(album) and message.caption:
-        await message.answer(globalText.data_isInvalid_text)
+        await message.answer(globalTexts.data_isInvalid_text)
             
         return False
     
@@ -42,7 +42,7 @@ async def AlbumInfoProcessor(current_state: State, state: FSMContext, message: M
                     current_state = await state.get_state()
 
                     if current_state == current_state:
-                        await message.answer(globalText.data_isInvalid_text)
+                        await message.answer(globalTexts.data_isInvalid_text)
 
                     return False
 
@@ -56,7 +56,7 @@ async def AlbumInfoProcessor(current_state: State, state: FSMContext, message: M
         current_state = await state.get_state()
 
         if current_state == current_state:
-            await message.answer(globalText.data_isInvalid_text)
+            await message.answer(globalTexts.data_isInvalid_text)
             
     return False
     

@@ -2,7 +2,7 @@ from aiogram.filters import Filter
 from aiogram import types
 from aiogram.fsm.context import FSMContext
 from Config import admins
-from utils import globalText
+from utils import globalTexts
 
 
 # Создаём собственный фильтр на проверку того, что юзер - админ
@@ -13,5 +13,5 @@ class AdminFilter(Filter):
         if user_id in admins:
             return True
         else:
-            await message.answer(globalText.rightsError_text)
+            await message.answer(globalTexts.rightsError_text)
             return False
