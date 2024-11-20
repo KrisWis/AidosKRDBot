@@ -7,7 +7,7 @@ from database.orm import AsyncORM
 from aiogram.fsm.context import FSMContext
 import datetime
 from InstanceBot import bot
-from helpers import Paginator, MediaGroupSender
+from helpers import Paginator, mediaGroupSend, sendPaginationMessage
 import re
 import math
 
@@ -62,38 +62,22 @@ async def start_from_kb(call: types.CallbackQuery, state: FSMContext) -> None:
 
 
 '''Прошедшие концерты'''
-previous_concerts_paginator = Paginator()
 # Отправка сообщения со всеми прошедшими концертами
 async def send_previous_concerts(call: types.CallbackQuery, state: FSMContext) -> None:
     previous_concerts = await AsyncORM.get_previous_concerts()
-    data = await state.get_data()
-        
-    if len(previous_concerts):
-        prefix = "previous_concerts"
-        items_per_page: int = 10
+    prefix = "previous_concerts"
 
-        async def getPreviousConcertsButtonsAndAmount():
-            previous_concerts = await AsyncORM.get_previous_concerts()
+    async def getPreviousConcertsButtonsAndAmount():
+        previous_concerts = await AsyncORM.get_previous_concerts()
 
-            buttons = [[types.InlineKeyboardButton(text=f"{previous_concert.name}",
-            callback_data=f'{prefix}|{previous_concert.id}')] for previous_concert in previous_concerts]
+        buttons = [[types.InlineKeyboardButton(text=f"{previous_concert.name}",
+        callback_data=f'{prefix}|{previous_concert.id}')] for previous_concert in previous_concerts]
 
-            return [buttons, len(previous_concerts)]
-        
-        paginator_kb = await previous_concerts_paginator.generate_paginator(userPreviousConcertsTexts.previous_concerts_text,
-        getPreviousConcertsButtonsAndAmount, prefix, [await globalKeyboards.get_back_to_start_menu_kb_button()],
-        items_per_page=items_per_page, extra_button_beforeActionsButtons=False)
-
-        if "media_group_messages_ids" in data:
-            for media_group_message_id in data["media_group_messages_ids"]:
-                await bot.delete_message(call.from_user.id, media_group_message_id)
-                await state.clear()
-
-        pages_amount = math.ceil(len(previous_concerts) / items_per_page)
-        await call.message.edit_text(f"(1/{pages_amount}) " + userPreviousConcertsTexts.previous_concerts_text,
-                reply_markup=paginator_kb)
-    else:
-        await call.message.edit_text(globalTexts.data_notFound_text)
+        return [buttons, len(previous_concerts)]
+    
+    await sendPaginationMessage(call, state, previous_concerts, getPreviousConcertsButtonsAndAmount,
+    prefix, userPreviousConcertsTexts.previous_concerts_text, 10, [await globalKeyboards.get_back_to_start_menu_kb_button()],
+    False)
 
 
 # Отправка сообщения с информацией о прошедшем концерте
@@ -110,7 +94,7 @@ async def show_previous_concert(call: types.CallbackQuery, state: FSMContext) ->
     previous_concert = await AsyncORM.get_previous_concert_by_id(previous_concert_id)
 
     if previous_concert:
-        await MediaGroupSender(call, state, previous_concert.photo_file_ids, previous_concert.video_file_ids)
+        await mediaGroupSend(call, state, previous_concert.photo_file_ids, previous_concert.video_file_ids)
 
         answer_message_text = userPreviousConcertsTexts.show_previous_concert_withoutText_text.format(previous_concert.name)
 
@@ -127,38 +111,23 @@ async def show_previous_concert(call: types.CallbackQuery, state: FSMContext) ->
 
 
 '''Предстоящие концерты'''
-future_concerts_paginator = Paginator()
 # Отправка сообщения со всеми предстоящими концертами
 async def send_future_concerts(call: types.CallbackQuery, state: FSMContext) -> None:
+
     future_concerts = await AsyncORM.get_future_concerts()
-    data = await state.get_data()
-        
-    if len(future_concerts):
-        prefix = "future_concerts"
-        items_per_page: int = 10
+    prefix = "future_concerts"
 
-        async def getFutureConcertsButtonsAndAmount():
-            future_concerts = await AsyncORM.get_future_concerts()
+    async def getFutureConcertsButtonsAndAmount():
+        future_concerts = await AsyncORM.get_future_concerts()
 
-            buttons = [[types.InlineKeyboardButton(text=f"{future_concert.name}",
-            callback_data=f'{prefix}|{future_concert.id}')] for future_concert in future_concerts]
+        buttons = [[types.InlineKeyboardButton(text=f"{future_concert.name}",
+        callback_data=f'{prefix}|{future_concert.id}')] for future_concert in future_concerts]
 
-            return [buttons, len(future_concerts)]
-        
-        paginator_kb = await future_concerts_paginator.generate_paginator(userFutureConcertsTexts.future_concerts_text,
-        getFutureConcertsButtonsAndAmount, prefix, [await globalKeyboards.get_back_to_start_menu_kb_button()],
-        items_per_page=items_per_page, extra_button_beforeActionsButtons=False)
-
-        if "media_group_messages_ids" in data:
-            for media_group_message_id in data["media_group_messages_ids"]:
-                await bot.delete_message(call.from_user.id, media_group_message_id)
-                await state.clear()
-
-        pages_amount = math.ceil(len(future_concerts) / items_per_page)
-        await call.message.edit_text(f"(1/{pages_amount}) " + userFutureConcertsTexts.future_concerts_text,
-                reply_markup=paginator_kb)
-    else:
-        await call.message.edit_text(globalTexts.data_notFound_text)
+        return [buttons, len(future_concerts)]
+    
+    await sendPaginationMessage(call, state, future_concerts, getFutureConcertsButtonsAndAmount,
+    prefix, userFutureConcertsTexts.future_concerts_text, 10, [await globalKeyboards.get_back_to_start_menu_kb_button()],
+    False)
 
 
 # Отправка сообщения с выбором какую информацию получить о предстоящем концерте
@@ -194,14 +163,12 @@ async def show_future_concert_info(call: types.CallbackQuery, state: FSMContext)
 
     future_concert_id = int(temp[2])
 
-    future_concert = await AsyncORM.get_future_concert_by_id(future_concert_id)
-
     choosing_info = temp[3]
     
     if choosing_info == "artist":
         artist_info = await AsyncORM.get_future_concert_artist_info_by_id(future_concert_id)
 
-        await MediaGroupSender(call, state, artist_info[1], artist_info[2])
+        await mediaGroupSend(call, state, artist_info[1], artist_info[2])
         
         answer_message_text = userFutureConcertsTexts.show_future_concert_artist_info_withoutText_text
 
@@ -217,7 +184,7 @@ async def show_future_concert_info(call: types.CallbackQuery, state: FSMContext)
     elif choosing_info == "platform":
         platform_info = await AsyncORM.get_future_concert_platform_info_by_id(future_concert_id)
 
-        await MediaGroupSender(call, state, platform_info[1], platform_info[2])
+        await mediaGroupSend(call, state, platform_info[1], platform_info[2])
 
         answer_message_text = userFutureConcertsTexts.show_future_concert_platform_info_withoutText_text
 

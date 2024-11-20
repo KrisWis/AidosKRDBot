@@ -4,7 +4,9 @@ from aiogram.fsm.context import FSMContext
 from utils import globalTexts
 from typing import Union
 
-async def AlbumInfoProcessor(current_state: State, state: FSMContext, message: Message,
+
+# Обработка медиагруппы изображений, отправляемой пользователем
+async def albumInfoProcess(current_state: State, state: FSMContext, message: Message,
     album: list[Message] = []) -> Union[str, list[str], list[str]]:
     user_text = message.text or message.caption or ""
 

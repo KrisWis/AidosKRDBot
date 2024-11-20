@@ -2,7 +2,8 @@ from aiogram import types
 from aiogram.fsm.context import FSMContext
 
 
-async def MediaGroupSender(call: types.CallbackQuery, state: FSMContext, photo_file_ids: list[str], video_file_ids: list[str]) -> bool:
+# Функция для обработки и отправки медиагруппы с изображениями и видео
+async def mediaGroupSend(call: types.CallbackQuery, state: FSMContext, photo_file_ids: list[str], video_file_ids: list[str]) -> bool:
     if photo_file_ids or video_file_ids:
 
         media_group_elements = []

@@ -36,13 +36,13 @@ show_future_concert_platform_info_withoutText_text = '''
 show_future_concert_choose_info_text = "Выбери какую информацию хочешь узнать о предстоящем концерте:"
 
 show_future_concert_holding_time_text = '''
-<b>Во сколько собираемся?</b>: 
+<b>Во сколько собираемся?</b> 
 
 <i>{}</i>
 '''
 
 show_future_concert_ticket_price_text = '''
-<b>Сколько стоит?</b>: 
+<b>Сколько стоит?</b>
 
 <i>{} RUB</i>
 '''

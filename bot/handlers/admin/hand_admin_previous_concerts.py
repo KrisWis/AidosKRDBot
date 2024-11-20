@@ -10,44 +10,28 @@ from states.Admin import PreviousConcertsStates
 import re
 import math
 import datetime
-from helpers import AlbumInfoProcessor, MediaGroupSender
+from helpers import albumInfoProcess, mediaGroupSend, sendPaginationMessage
 from RunBot import logger
 
 
 '''Прошедшие концерты'''
-admin_previous_concerts_paginator = Paginator()
 # Отправка сообщения со всеми прошедшими концертами
 async def send_previous_concerts(call: types.CallbackQuery, state: FSMContext) -> None:
     previous_concerts = await AsyncORM.get_previous_concerts()
-    data = await state.get_data()
-        
-    if len(previous_concerts):
-        prefix = "admin_previous_concerts"
-        items_per_page: int = 10
+    prefix = "admin_previous_concerts"
 
-        async def getPreviousConcertsButtonsAndAmount():
-            previous_concerts = await AsyncORM.get_previous_concerts()
+    async def getPreviousConcertsButtonsAndAmount():
+        previous_concerts = await AsyncORM.get_previous_concerts()
 
-            buttons = [[types.InlineKeyboardButton(text=f"{previous_concert.name}",
-            callback_data=f'{prefix}|{previous_concert.id}')] for previous_concert in previous_concerts]
+        buttons = [[types.InlineKeyboardButton(text=f"{previous_concert.name}",
+        callback_data=f'{prefix}|{previous_concert.id}')] for previous_concert in previous_concerts]
 
-            return [buttons, len(previous_concerts)]
-        
-        paginator_kb = await admin_previous_concerts_paginator.generate_paginator(adminPreviousConcertsTexts.previous_concerts_text,
-        getPreviousConcertsButtonsAndAmount, prefix,
-        [await adminKeyboards.get_previous_concert_kb_button(), 
-        await adminKeyboards.get_back_to_admin_menu_kb_button()], items_per_page=items_per_page)
-
-        if "media_group_messages_ids" in data:
-            for media_group_message_id in data["media_group_messages_ids"]:
-                await bot.delete_message(call.from_user.id, media_group_message_id)
-                await state.clear()
-
-        pages_amount = math.ceil(len(previous_concerts) / items_per_page)
-        await call.message.edit_text(f"(1/{pages_amount}) " + adminPreviousConcertsTexts.previous_concerts_text, 
-                reply_markup=paginator_kb)
-    else:
-        await call.message.edit_text(globalTexts.data_notFound_text, reply_markup=await adminKeyboards.add_previous_concert_kb())
+        return [buttons, len(previous_concerts)]
+    
+    await sendPaginationMessage(call, state, previous_concerts, getPreviousConcertsButtonsAndAmount,
+    prefix, adminPreviousConcertsTexts.previous_concerts_text, 10,
+    [await adminKeyboards.get_previous_concert_kb_button(), 
+    await adminKeyboards.get_back_to_admin_menu_kb_button()])
 
 
 # Отправка сообщения о том, чтобы администратор прислал название прошедшего концерта
@@ -79,7 +63,7 @@ async def wait_previous_concert_info(message: types.Message, state: FSMContext):
 
 # Ожидание информации предстоящего концерта. Добавление прошедшего концерта в базу данных
 async def add_previous_concert(message: types.Message, album: list[types.Message] = [], state: FSMContext = None):
-    result = await AlbumInfoProcessor(PreviousConcertsStates.wait_info, state, message, album)
+    result = await albumInfoProcess(PreviousConcertsStates.wait_info, state, message, album)
 
     if not result:
         await message.answer(globalTexts.data_isInvalid_text)
@@ -125,7 +109,7 @@ async def show_previous_concert(call: types.CallbackQuery, state: FSMContext) ->
     previous_concert = await AsyncORM.get_previous_concert_by_id(previous_concert_id)
 
     if previous_concert:
-        await MediaGroupSender(call, state, previous_concert.photo_file_ids, previous_concert.video_file_ids)
+        await mediaGroupSend(call, state, previous_concert.photo_file_ids, previous_concert.video_file_ids)
 
         answer_message_text = adminPreviousConcertsTexts.show_previous_concert_withoutText_text.format(previous_concert.name)
 

@@ -1,3 +1,5 @@
 from helpers.Paginator import Paginator
-from helpers.AlbumInfoProcessor import AlbumInfoProcessor
-from helpers.MediaGroupSender import MediaGroupSender
+from helpers.albumInfoProcess import albumInfoProcess
+from helpers.mediaGroupSend import mediaGroupSend
+from helpers.sendPaginationMessage import sendPaginationMessage
+from helpers.FutureConcerts.futureConcertChangeInfo import futureConcertChangeInfo
