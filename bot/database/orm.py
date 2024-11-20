@@ -288,7 +288,7 @@ class AsyncORM:
         
         async with async_session() as session:
             result = await session.execute(
-                select(FutureConcertsOrm).order_by(FutureConcertsOrm.created_at.desc()))
+                select(FutureConcertsOrm).order_by(FutureConcertsOrm.holding_time.asc()))
             future_concerts = result.scalars().all()
             
             return future_concerts

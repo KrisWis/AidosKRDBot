@@ -21,7 +21,8 @@ async def send_future_concerts(call: types.CallbackQuery, state: FSMContext) -> 
     async def getFutureConcertsButtonsAndAmount():
         future_concerts = await AsyncORM.get_future_concerts()
 
-        buttons = [[types.InlineKeyboardButton(text=f"{future_concert.name}",
+        buttons = [[types.InlineKeyboardButton(
+        text=f"{future_concert.name if len(future_concert.name) <= 35 else future_concert.name[:35] + '...'} — {future_concert.holding_time.strftime("%d.%m.%Y %H:%M")}",
         callback_data=f'{prefix}|{future_concert.id}')] for future_concert in future_concerts]
 
         return [buttons, len(future_concerts)]
