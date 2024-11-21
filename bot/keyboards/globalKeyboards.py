@@ -7,7 +7,7 @@ async def start_menu_kb():
     kb = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='◀️ Прошедшие концерты', callback_data='start|previous_concerts'),
     InlineKeyboardButton(text='▶️ Предстоящие концерты', callback_data='start|future_concerts')],
-    [InlineKeyboardButton(text='ℹ️ О нас', callback_data='start|discounts'),
+    [InlineKeyboardButton(text='ℹ️ О нас', callback_data='start|about_us'),
     InlineKeyboardButton(text='❓ Что нового?', callback_data='start|what_is_new')],
     [InlineKeyboardButton(text='👥 Наши партнёры', callback_data='start|out_partners')],
     [InlineKeyboardButton(text='📊 Статистика', callback_data='start|stats')]])
@@ -49,3 +49,22 @@ async def back_to_future_concert_choose_kb(future_concert_id: int):
 
     return kb
 '''/Предстоящие концерты/'''
+
+'''О нас'''
+
+# Инлайн-клавиатура для выбора того, какую информацию хотите получить
+async def about_us_choice_kb():
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='ℹ️ О нас', callback_data='start|about_us|about_us')],
+    [InlineKeyboardButton(text='🎼 О организации', callback_data='start|about_us|about_organization')]])
+
+    return kb
+
+
+# Инлайн-клавиатура для возврата обратно в меню выбора информации
+async def back_to_about_us_choose_kb():
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='🔙 Обратно в меню выбора', callback_data='start|about_us')]])
+
+    return kb
+'''/О нас/'''

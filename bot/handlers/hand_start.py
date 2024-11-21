@@ -7,9 +7,9 @@ from database.orm import AsyncORM
 from aiogram.fsm.context import FSMContext
 import datetime
 from InstanceBot import bot
-from helpers import Paginator, mediaGroupSend, sendPaginationMessage
+from helpers import mediaGroupSend, sendPaginationMessage
 import re
-import math
+from utils import userAboutUsTexts
 
 
 '''Глобальное'''
@@ -215,6 +215,26 @@ async def show_future_concert_info(call: types.CallbackQuery, state: FSMContext)
 '''/Предстоящие концерты/'''
 
 
+'''О нас'''
+# Отправка сообщения с выбором, что узнать о нас
+async def send_about_us_choice(call: types.CallbackQuery) -> None:
+
+    await call.message.edit_text(userAboutUsTexts.about_us_choice_text, reply_markup=await globalKeyboards.about_us_choice_kb())
+
+
+# Отправка сообщения с информацией о нас
+async def send_about_us_info(call: types.CallbackQuery) -> None:
+
+    await call.message.edit_text(userAboutUsTexts.about_us_text, reply_markup=await globalKeyboards.back_to_about_us_choose_kb())
+
+
+# Отправка сообщения с информацией о нас
+async def send_about_organization_info(call: types.CallbackQuery) -> None:
+
+    await call.message.edit_text(userAboutUsTexts.about_organization_text,
+    reply_markup=await globalKeyboards.back_to_about_us_choose_kb())
+'''/О нас/'''
+
 
 def hand_add():
     '''Глобальное'''
@@ -239,3 +259,11 @@ def hand_add():
     router.callback_query.register(show_future_concert_info, lambda c: 
     re.match(r"^start\|future_concerts\|(?P<future_concert_id>\d+)\|(artist|platform|price|time)$", c.data))
     '''/Предстоящие концерты/'''
+
+    '''О нас'''
+    router.callback_query.register(send_about_us_choice, lambda c: c.data == 'start|about_us')
+
+    router.callback_query.register(send_about_us_info, lambda c: c.data == 'start|about_us|about_us')
+
+    router.callback_query.register(send_about_organization_info, lambda c: c.data == 'start|about_us|about_organization')
+    '''/О нас/'''

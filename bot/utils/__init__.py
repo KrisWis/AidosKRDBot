@@ -1,5 +1,3 @@
-from utils.texts.admin import adminFutureConcertsTexts, adminPreviousConcertsTexts
-from utils.texts.admin import adminTexts
-from utils.texts.user import userFutureConcertsTexts
+from utils.texts.admin import adminFutureConcertsTexts, adminPreviousConcertsTexts, adminTexts
+from utils.texts.user import userFutureConcertsTexts, userPreviousConcertsTexts, userAboutUsTexts, userDiscounts, userWhatsNewTexts
 from utils.texts import globalTexts
-from utils.texts.user import userPreviousConcertsTexts
