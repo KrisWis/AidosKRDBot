@@ -43,7 +43,7 @@ async def get_future_concert_info_kb(future_concert_id: int):
 
 
 # Инлайн-клавиатура для возврата обратно в меню выбора
-async def back_to_future_concert_choose_kb(future_concert_id: int):
+async def back_to_future_concert_selection_menu_kb(future_concert_id: int):
     kb = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='🔙 Обратно в меню выбора', callback_data=f'future_concerts|{future_concert_id}')]])
 
@@ -62,7 +62,7 @@ async def about_us_choice_kb():
 
 
 # Инлайн-клавиатура для возврата обратно в меню выбора информации
-async def back_to_about_us_choose_kb():
+async def back_to_about_us_selection_menu_kb():
     kb = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='🔙 Обратно в меню выбора', callback_data='start|about_us')]])
 

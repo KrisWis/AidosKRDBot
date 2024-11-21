@@ -3,3 +3,4 @@ from helpers.albumInfoProcess import albumInfoProcess
 from helpers.mediaGroupSend import mediaGroupSend
 from helpers.sendPaginationMessage import sendPaginationMessage
 from helpers.FutureConcerts.futureConcertChangeInfo import futureConcertChangeInfo
+from helpers.deleteSendedMediaGroup import deleteSendedMediaGroup

@@ -7,7 +7,7 @@ from database.orm import AsyncORM
 from aiogram.fsm.context import FSMContext
 import datetime
 from InstanceBot import bot
-from helpers import mediaGroupSend, sendPaginationMessage
+from helpers import mediaGroupSend, sendPaginationMessage, deleteSendedMediaGroup
 import re
 from utils import userAboutUsTexts
 
@@ -140,12 +140,7 @@ async def choose_future_concert_info(call: types.CallbackQuery, state: FSMContex
     future_concert = await AsyncORM.get_future_concert_artist_info_by_id(future_concert_id)
 
     if future_concert:
-        data = await state.get_data()
-
-        if "media_group_messages_ids" in data:
-            for media_group_message_id in data["media_group_messages_ids"]:
-                await bot.delete_message(call.from_user.id, media_group_message_id)
-                await state.clear()
+        await deleteSendedMediaGroup(state, call.from_user.id)
 
         await call.message.edit_text(userFutureConcertsTexts.show_future_concert_choose_info_text,
         reply_markup=await globalKeyboards.get_future_concert_info_kb(future_concert_id))
@@ -180,7 +175,7 @@ async def show_future_concert_info(call: types.CallbackQuery, state: FSMContext)
                 answer_message_text = userFutureConcertsTexts.show_future_concert_artist_info_withImages_text.format(artist_info[0])
 
         await call.message.answer(answer_message_text,
-        reply_markup=await globalKeyboards.back_to_future_concert_choose_kb(future_concert_id))
+        reply_markup=await globalKeyboards.back_to_future_concert_selection_menu_kb(future_concert_id))
 
     elif choosing_info == "platform":
         platform_info = await AsyncORM.get_future_concert_platform_info_by_id(future_concert_id)
@@ -196,13 +191,13 @@ async def show_future_concert_info(call: types.CallbackQuery, state: FSMContext)
                 answer_message_text = userFutureConcertsTexts.show_future_concert_platform_info_withImages_text.format(platform_info[0])
 
         await call.message.answer(answer_message_text,
-        reply_markup=await globalKeyboards.back_to_future_concert_choose_kb(future_concert_id))
+        reply_markup=await globalKeyboards.back_to_future_concert_selection_menu_kb(future_concert_id))
     
     elif choosing_info == "price":
         ticket_price = await AsyncORM.get_future_concert_ticket_price_by_id(future_concert_id)
 
         await call.message.answer(userFutureConcertsTexts.show_future_concert_ticket_price_text.
-        format(ticket_price), reply_markup=await globalKeyboards.back_to_future_concert_choose_kb(future_concert_id))
+        format(ticket_price), reply_markup=await globalKeyboards.back_to_future_concert_selection_menu_kb(future_concert_id))
 
 
     elif choosing_info == "time":
@@ -211,7 +206,7 @@ async def show_future_concert_info(call: types.CallbackQuery, state: FSMContext)
         formatted_time = holding_time.strftime("%d.%m.%Y %H:%M")
 
         await call.message.answer(userFutureConcertsTexts.show_future_concert_holding_time_text.
-        format(formatted_time), reply_markup=await globalKeyboards.back_to_future_concert_choose_kb(future_concert_id))
+        format(formatted_time), reply_markup=await globalKeyboards.back_to_future_concert_selection_menu_kb(future_concert_id))
 '''/Предстоящие концерты/'''
 
 
@@ -225,14 +220,14 @@ async def send_about_us_choice(call: types.CallbackQuery) -> None:
 # Отправка сообщения с информацией о нас
 async def send_about_us_info(call: types.CallbackQuery) -> None:
 
-    await call.message.edit_text(userAboutUsTexts.about_us_text, reply_markup=await globalKeyboards.back_to_about_us_choose_kb())
+    await call.message.edit_text(userAboutUsTexts.about_us_text, reply_markup=await globalKeyboards.back_to_about_us_selection_menu_kb())
 
 
 # Отправка сообщения с информацией о нас
 async def send_about_organization_info(call: types.CallbackQuery) -> None:
 
     await call.message.edit_text(userAboutUsTexts.about_organization_text,
-    reply_markup=await globalKeyboards.back_to_about_us_choose_kb())
+    reply_markup=await globalKeyboards.back_to_about_us_selection_menu_kb())
 '''/О нас/'''
 
 

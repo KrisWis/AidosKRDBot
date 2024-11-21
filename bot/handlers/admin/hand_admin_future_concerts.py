@@ -28,7 +28,7 @@ async def send_future_concerts(call: types.CallbackQuery, state: FSMContext) -> 
         return [buttons, len(future_concerts)]
     
     await sendPaginationMessage(call, state, future_concerts, getFutureConcertsButtonsAndAmount,
-    prefix, adminFutureConcertsTexts.future_concerts_text, 10, [await adminKeyboards.get_future_concert_kb_button(), 
+    prefix, adminFutureConcertsTexts.future_concerts_text, 10, [await adminKeyboards.get_kb_addButton('future_concerts'), 
     await adminKeyboards.get_back_to_admin_menu_kb_button()])
     
 
@@ -280,7 +280,7 @@ async def confirm_delete_future_concert(call: types.CallbackQuery) -> None:
 
     await call.message.edit_text(adminFutureConcertsTexts.future_concert_actions_delete_confirmation_text.
     format(future_concert.name),
-    reply_markup=await adminKeyboards.future_concert_delete_confirmation_kb(future_concert.id))
+    reply_markup=await adminKeyboards.delete_confirmation_kb(future_concert.id, 'future_concerts'))
 
 
 # Обработка подтверждения/отклонения удаления информации о предстоящем концерте
@@ -302,11 +302,11 @@ async def future_concert_delete_confirmation(call: types.CallbackQuery) -> None:
         await AsyncORM.delete_future_concert(future_concert_id)
 
         await call.message.edit_text(adminFutureConcertsTexts.future_concert_actions_delete_confirmation_yes_text.
-        format(future_concert.name), reply_markup=await adminKeyboards.back_to_future_concerts_menu_kb())
+        format(future_concert.name), reply_markup=await adminKeyboards.back_to_selection_menu_kb('future_concerts'))
 
     elif action == "no":
         await call.message.edit_text(adminFutureConcertsTexts.future_concert_actions_delete_confirmation_no_text.
-        format(future_concert.name), reply_markup=await adminKeyboards.back_to_future_concerts_menu_kb())
+        format(future_concert.name), reply_markup=await adminKeyboards.back_to_selection_menu_kb('future_concerts'))
 
 
 # Отправка сообщения с тем, чтобы пользователь прислал обновлённую информацию для замены конкретной информации предстоящего концерта

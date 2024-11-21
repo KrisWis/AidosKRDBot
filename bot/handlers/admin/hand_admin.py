@@ -5,11 +5,14 @@ from utils import adminTexts
 from keyboards import adminKeyboards
 from filters import AdminFilter
 from aiogram.fsm.context import FSMContext
+from helpers import deleteSendedMediaGroup
 
 
 '''Глобальное'''
 # Отправка админ-меню при вводе "/admin"
 async def admin(message: types.Message, state: FSMContext):
+    await deleteSendedMediaGroup(state, message.from_user.id)
+    
     first_name = message.from_user.first_name
 
     await message.answer(adminTexts.admin_menu_text.format(first_name), reply_markup=await adminKeyboards.admin_menu_kb())

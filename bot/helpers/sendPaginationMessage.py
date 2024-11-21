@@ -1,10 +1,10 @@
-from aiogram.types import InlineKeyboardButton, CallbackQuery
+from aiogram.types import InlineKeyboardButton, CallbackQuery, InlineKeyboardMarkup
 from aiogram.fsm.context import FSMContext
 from utils import globalTexts
 from typing import Callable, Union, Awaitable
 from helpers import Paginator
-from InstanceBot import bot
 import math
+from helpers.deleteSendedMediaGroup import deleteSendedMediaGroup
 
 
 # Отправка сообщения с пагинацией в зависимости от входных данных
@@ -22,13 +22,18 @@ async def sendPaginationMessage(call: CallbackQuery, state: FSMContext, items: l
         getButtonsAndAmount, prefix, extra_buttons,
         items_per_page=items_per_page, extra_button_beforeActionsButtons=extra_button_beforeActionsButtons)
 
-        if "media_group_messages_ids" in data:
-            for media_group_message_id in data["media_group_messages_ids"]:
-                await bot.delete_message(call.from_user.id, media_group_message_id)
-                await state.clear()
+        await deleteSendedMediaGroup(state, call.from_user.id)
 
         pages_amount = math.ceil(len(items) / items_per_page)
         await call.message.edit_text(f"(1/{pages_amount}) " + text,
                 reply_markup=paginator_kb)
     else:
-        await call.message.edit_text(globalTexts.data_notFound_text)
+        inline_keyboard = []
+
+        for extra_button in extra_buttons:
+            inline_keyboard.append([extra_button])
+
+        kb = InlineKeyboardMarkup(
+        inline_keyboard=inline_keyboard)
+
+        await call.message.edit_text(globalTexts.data_notFound_text, reply_markup=kb)

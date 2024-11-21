@@ -5,10 +5,8 @@ from utils import globalTexts, adminPreviousConcertsTexts
 from keyboards import adminKeyboards
 from aiogram.fsm.context import FSMContext
 from database.orm import AsyncORM
-from helpers import Paginator
 from states.Admin import PreviousConcertsStates
 import re
-import math
 import datetime
 from helpers import albumInfoProcess, mediaGroupSend, sendPaginationMessage
 from RunBot import logger
@@ -95,6 +93,7 @@ async def add_previous_concert(message: types.Message, album: list[types.Message
 
     await state.clear()
 
+
 # Отправка сообщения с информацией о прошедшем концерте и возможностью удаления/изменения информации
 async def show_previous_concert(call: types.CallbackQuery, state: FSMContext) -> None:
     user_id = call.from_user.id
@@ -120,7 +119,7 @@ async def show_previous_concert(call: types.CallbackQuery, state: FSMContext) ->
                 answer_message_text = adminPreviousConcertsTexts.show_previous_concert_withImages_text.format(previous_concert.name, previous_concert.info_text)
 
         await call.message.answer(answer_message_text,
-        reply_markup=await adminKeyboards.previous_concert_actions_kb(previous_concert.id))
+        reply_markup=await adminKeyboards.actions_kb(previous_concert.id, 'previous_concerts'))
     else:
         await call.message.answer(globalTexts.data_notFound_text)
 
@@ -149,7 +148,7 @@ async def previous_concert_actions(call: types.CallbackQuery, state: FSMContext)
     elif action == "delete":
         await call.message.edit_text(adminPreviousConcertsTexts.previous_concert_actions_delete_confirmation_text.
         format(previous_concert.name),
-        reply_markup=await adminKeyboards.previous_concert_delete_confirmation_kb(previous_concert.id))
+        reply_markup=await adminKeyboards.delete_confirmation_kb(previous_concert.id, 'previous_concerts'))
 
 
 # Обработка подтверждения/отклонения удаления информации о прошедшем концерте
@@ -171,11 +170,11 @@ async def previous_concert_delete_confirmation(call: types.CallbackQuery) -> Non
         await AsyncORM.delete_previous_concert(previous_concert_id)
 
         await call.message.edit_text(adminPreviousConcertsTexts.previous_concert_actions_delete_confirmation_yes_text.
-        format(previous_concert.name), reply_markup=await adminKeyboards.back_to_previous_concerts_menu_kb())
+        format(previous_concert.name), reply_markup=await adminKeyboards.back_to_selection_menu_kb('previous_concerts'))
 
     elif action == "no":
         await call.message.edit_text(adminPreviousConcertsTexts.previous_concert_actions_delete_confirmation_no_text.
-        format(previous_concert.name), reply_markup=await adminKeyboards.back_to_previous_concerts_menu_kb())
+        format(previous_concert.name), reply_markup=await adminKeyboards.back_to_selection_menu_kb('previous_concerts'))
 '''/Прошедшие концерты/'''
 
 

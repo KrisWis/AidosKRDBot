@@ -1,5 +1,5 @@
 from sqlalchemy import *
-from database.models import UsersOrm, PreviousConcertsOrm, FutureConcertsOrm
+from database.models import UsersOrm, PreviousConcertsOrm, FutureConcertsOrm, TeamNewsOrm
 from database.db import Base, engine, async_session, date
 from datetime import datetime, timedelta
 from typing import Union
@@ -375,3 +375,92 @@ class AsyncORM:
             
             return False
     '''/FutureConcertsORM/'''
+
+
+    '''TeamNewsORM'''
+    # Получение новости по id
+    @staticmethod
+    async def get_team_news_item_by_id(id: int) -> TeamNewsOrm:
+        async with async_session() as session:
+
+            result = await session.execute(
+                select(TeamNewsOrm).where(TeamNewsOrm.id == id))
+            news_item = result.scalar()
+            
+            return news_item
+        
+
+    # Получение новости по названию
+    @staticmethod
+    async def get_team_news_item_by_name(name: str) -> TeamNewsOrm:
+        async with async_session() as session:
+
+            result = await session.execute(
+                select(TeamNewsOrm).where(TeamNewsOrm.name == name))
+            news_item = result.scalar()
+            
+            return news_item
+        
+
+    # Добавление новости в базу данных
+    @staticmethod
+    async def add_team_news_item(name: str, created_at: Date, text: str,
+        photo_file_ids: list[str] = [],
+        video_file_ids: list[str] = []) -> bool:
+
+        news_item = TeamNewsOrm(name=name, created_at=created_at, text=text,
+        photo_file_ids=photo_file_ids, video_file_ids=video_file_ids)
+
+        async with async_session() as session:
+            session.add(news_item)
+
+            await session.commit() 
+
+        return True
+
+
+    # Получение всех новостей команды
+    @staticmethod
+    async def get_team_news() -> list[TeamNewsOrm]:
+        
+        async with async_session() as session:
+            result = await session.execute(
+                select(TeamNewsOrm).order_by(TeamNewsOrm.created_at.desc()))
+            team_news = result.scalars().all()
+            
+            return team_news
+        
+
+    # Изменение информации новости команды
+    @staticmethod
+    async def change_team_news_item_info(id: int, text: str,
+        photo_file_ids: list[str], video_file_ids: list[str]) -> bool:
+
+        async with async_session() as session:
+            result = await session.execute(select(TeamNewsOrm).where(TeamNewsOrm.id == id))
+            news_item: TeamNewsOrm = result.scalar()
+
+            news_item.text = text
+            news_item.photo_file_ids = photo_file_ids
+            news_item.video_file_ids = video_file_ids
+
+            await session.commit()
+                
+        return True
+    
+
+    # Удаление новости команды по id
+    @staticmethod
+    async def delete_team_news_item(id: int) -> TeamNewsOrm:
+        async with async_session() as session:
+
+            result = await session.execute(select(TeamNewsOrm).where(TeamNewsOrm.id == id))
+            news_item: TeamNewsOrm = result.scalar()
+            
+            if news_item:
+                await session.delete(news_item)
+                await session.commit()  
+                return True
+            
+            return False
+    '''/TeamNewsORM/'''

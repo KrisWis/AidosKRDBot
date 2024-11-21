@@ -25,47 +25,38 @@ async def back_to_admin_menu_kb():
 # Получение кнопки из инлайн-клавиатуры для перехода обратно в админ-меню
 async def get_back_to_admin_menu_kb_button():
     return InlineKeyboardButton(text='🔙 Обратно в админ-меню', callback_data='admin')
-'''/Глобальное/'''
 
 
-'''Прошедшие концерты'''
-# Получение кнопки из инлайн-клавиатуры для добавления прошедшего концерта
-async def get_previous_concert_kb_button():
-    return InlineKeyboardButton(text='➕ Добавить концерт', callback_data='admin|previous_concerts|add')
+# Получение кнопки из инлайн-клавиатуры для добавления
+async def get_kb_addButton(prefix: str):
+    return InlineKeyboardButton(text='➕ Добавить концерт', callback_data=f'admin|{prefix}|add')
 
 
-# Инлайн-клавиатура для добавления прошедшего концерта
-async def add_previous_concert_kb():
+# Инлайн-клавиатура для взаимодействия с данными
+async def actions_kb(id: int, prefix: str):
     kb = InlineKeyboardMarkup(inline_keyboard=[
-    [await get_previous_concert_kb_button()]])
-
-    return kb
-
-# Инлайн-клавиатура для взаимодействия с данными о прошедшем концерте
-async def previous_concert_actions_kb(previous_concert_kb: int):
-    kb = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='🔄 Заменить', callback_data=f'previous_concerts|{previous_concert_kb}|replace')],
-    [InlineKeyboardButton(text='❌ Удалить', callback_data=f'previous_concerts|{previous_concert_kb}|delete')]])
+    [InlineKeyboardButton(text='🔄 Заменить', callback_data=f'{prefix}|{id}|replace')],
+    [InlineKeyboardButton(text='❌ Удалить', callback_data=f'{prefix}|{id}|delete')]])
 
     return kb
 
 
 # Инлайн-клавиатура для подтверждения/отклонения удаления данных о прошедшем концерте
-async def previous_concert_delete_confirmation_kb(previous_concert_kb: int):
+async def delete_confirmation_kb(id: int, prefix: str):
     kb = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='Я понимаю, удалить', callback_data=f'previous_concerts|{previous_concert_kb}|delete|yes')],
-    [InlineKeyboardButton(text='Отменить удаление', callback_data=f'previous_concerts|{previous_concert_kb}|delete|no')]])
+    [InlineKeyboardButton(text='Я понимаю, удалить', callback_data=f'{prefix}|{id}|delete|yes')],
+    [InlineKeyboardButton(text='Отменить удаление', callback_data=f'{prefix}|{id}|delete|no')]])
 
     return kb
 
 
-# Инлайн-клавиатура для перехода обратно в меню прошедших концертов
-async def back_to_previous_concerts_menu_kb():
+# Инлайн-клавиатура для перехода обратно в меню выбора
+async def back_to_selection_menu_kb(postfix: str):
     kb = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='🔙 Обратно в меню выбора', callback_data='admin|previous_concerts')]])
+    [InlineKeyboardButton(text='🔙 Обратно в меню выбора', callback_data=f'admin|{postfix}')]])
 
     return kb
-'''/Прошедшие концерты/'''
+'''/Глобальное/'''
 
 '''Предстоящие концерты'''
 # Клавиатура для с кнопками для получения информации о предстоящем концерте
@@ -80,19 +71,6 @@ async def get_future_concert_info_kb(future_concert_id: int):
     return kb
 
 
-# Получение кнопки из инлайн-клавиатуры для добавления предстоящего концерта
-async def get_future_concert_kb_button():
-    return InlineKeyboardButton(text='➕ Добавить концерт', callback_data='admin|future_concerts|add')
-
-
-# Инлайн-клавиатура для добавления предстоящего концерта
-async def add_future_concert_kb():
-    kb = InlineKeyboardMarkup(inline_keyboard=[
-    [await get_future_concert_kb_button()]])
-
-    return kb
-
-
 # Инлайн-клавиатура для взаимодействия с данными о предстоящем концерте
 async def future_concert_actions_kb(future_concert_id: int, action: str):
     kb = InlineKeyboardMarkup(inline_keyboard=[
@@ -100,21 +78,20 @@ async def future_concert_actions_kb(future_concert_id: int, action: str):
     [InlineKeyboardButton(text='🔙 Обратно в меню выбора', callback_data=f'admin_future_concerts|{future_concert_id}')]])
 
     return kb
-
-
-# Инлайн-клавиатура для подтверждения/отклонения удаления данных о предстоящем концерте
-async def future_concert_delete_confirmation_kb(future_concert_id: int):
-    kb = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='Я понимаю, удалить', callback_data=f'future_concerts|{future_concert_id}|delete|yes')],
-    [InlineKeyboardButton(text='Отменить удаление', callback_data=f'future_concerts|{future_concert_id}|delete|no')]])
-
-    return kb
-
-
-# Инлайн-клавиатура для перехода обратно в меню предстоящих концертов
-async def back_to_future_concerts_menu_kb():
-    kb = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='🔙 Обратно в меню выбора', callback_data='admin|future_concerts')]])
-
-    return kb
 '''/Предстоящие концерты/'''
+
+'''Что нового?'''
+# Инлайн-клавиатура для открытия меню выбора новостей
+async def what_is_new_selection_menu_kb():
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='📰 Новости команды', callback_data=f'admin|what_is_new|team_news')],
+    [InlineKeyboardButton(text='🔊 Эксклюзивные треки', callback_data=f'admin|what_is_new|exclusive')],
+    [InlineKeyboardButton(text='🎶 Музыка с концерта', callback_data=f'admin|what_is_new|music')]])
+
+    return kb
+
+
+# Получение кнопки для возвращения в меню выбора новостей
+async def get_team_news_kb_backToSelectionMenuButton():
+    return InlineKeyboardButton(text='🔙 Обратно в меню выбора', callback_data='admin|what_is_new')
+'''/Что нового?/'''

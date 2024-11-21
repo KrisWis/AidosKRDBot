@@ -20,3 +20,10 @@ class FutureConcertsStates(StatesGroup):
 
     wait_ticket_price = State()
 '''/Предстоящие концерты/'''
+
+'''Что нового?'''
+class WhatIsNewStates(StatesGroup):
+    wait_name = State()
+
+    wait_info = State()
+'''/Что нового?/'''
