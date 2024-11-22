@@ -32,8 +32,8 @@ async def send_team_news(call: types.CallbackQuery, state: FSMContext) -> None:
         team_news = await AsyncORM.get_team_news()
 
         buttons = [[types.InlineKeyboardButton(
-        text=future_concert.name,
-        callback_data=f'{prefix}|{future_concert.id}')] for future_concert in team_news]
+        text=team_news_item.name,
+        callback_data=f'{prefix}|{team_news_item.id}')] for team_news_item in team_news]
 
         return [buttons, len(team_news)]
     
@@ -122,13 +122,13 @@ async def show_team_news_item(call: types.CallbackQuery, state: FSMContext) -> N
     if team_news_item:
         await mediaGroupSend(call, state, team_news_item.photo_file_ids, team_news_item.video_file_ids)
 
-        answer_message_text = adminWhatIsNewTexts.show_team_news_withoutText_text.format(team_news_item.name)
+        answer_message_text = userWhatsNewTexts.show_team_news_withoutText_text.format(team_news_item.name)
 
         if team_news_item.text:
             if not team_news_item.photo_file_ids and not team_news_item.video_file_ids:
-                answer_message_text = adminWhatIsNewTexts.show_team_news_text.format(team_news_item.name, team_news_item.text)
+                answer_message_text = userWhatsNewTexts.show_team_news_text.format(team_news_item.name, team_news_item.text)
             else:
-                answer_message_text = adminWhatIsNewTexts.show_team_news_withImages_text.format(team_news_item.name, team_news_item.text)
+                answer_message_text = userWhatsNewTexts.show_team_news_withImages_text.format(team_news_item.name, team_news_item.text)
 
         await call.message.answer(answer_message_text,
         reply_markup=await adminKeyboards.actions_kb(team_news_item.id, 'team_news'))

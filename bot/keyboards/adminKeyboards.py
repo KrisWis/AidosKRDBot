@@ -29,7 +29,7 @@ async def get_back_to_admin_menu_kb_button():
 
 # Получение кнопки из инлайн-клавиатуры для добавления
 async def get_kb_addButton(prefix: str):
-    return InlineKeyboardButton(text='➕ Добавить концерт', callback_data=f'admin|{prefix}|add')
+    return InlineKeyboardButton(text='➕ Добавить', callback_data=f'admin|{prefix}|add')
 
 
 # Инлайн-клавиатура для взаимодействия с данными
@@ -66,7 +66,8 @@ async def get_future_concert_info_kb(future_concert_id: int):
     InlineKeyboardButton(text='🎵 Информация о площадке', callback_data=f'admin|future_concerts|{future_concert_id}|platform')],
     [InlineKeyboardButton(text='🕰 Время проведения', callback_data=f'admin|future_concerts|{future_concert_id}|time'),
     InlineKeyboardButton(text='🎟 Стоимость билета', callback_data=f'admin|future_concerts|{future_concert_id}|price')],
-    [InlineKeyboardButton(text='❌ Удалить всё', callback_data=f'future_concerts|{future_concert_id}|delete')]])
+    [InlineKeyboardButton(text='❌ Удалить всё', callback_data=f'future_concerts|{future_concert_id}|delete')],
+    [InlineKeyboardButton(text='🔙 Обратно в меню', callback_data=f'admin')]])
 
     return kb
 

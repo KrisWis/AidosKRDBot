@@ -1,7 +1,7 @@
 from aiogram import types
 from InstanceBot import router
 from aiogram.filters import CommandStart, StateFilter
-from utils import globalTexts, userPreviousConcertsTexts, userFutureConcertsTexts
+from utils import globalTexts, userPreviousConcertsTexts, userFutureConcertsTexts, userAboutUsTexts, userWhatsNewTexts
 from keyboards import globalKeyboards
 from database.orm import AsyncORM
 from aiogram.fsm.context import FSMContext
@@ -9,7 +9,6 @@ import datetime
 from InstanceBot import bot
 from helpers import mediaGroupSend, sendPaginationMessage, deleteSendedMediaGroup
 import re
-from utils import userAboutUsTexts
 
 
 '''Глобальное'''
@@ -76,7 +75,8 @@ async def send_previous_concerts(call: types.CallbackQuery, state: FSMContext) -
         return [buttons, len(previous_concerts)]
     
     await sendPaginationMessage(call, state, previous_concerts, getPreviousConcertsButtonsAndAmount,
-    prefix, userPreviousConcertsTexts.previous_concerts_text, 10, [await globalKeyboards.get_back_to_start_menu_kb_button()],
+    prefix, userPreviousConcertsTexts.previous_concerts_text, 10, 
+    [await globalKeyboards.get_back_to_start_menu_kb_button()],
     False)
 
 
@@ -231,6 +231,65 @@ async def send_about_organization_info(call: types.CallbackQuery) -> None:
 '''/О нас/'''
 
 
+'''Что нового?'''
+# Отправка сообщения со меню выбора "Что нового?"
+async def send_what_is_new_selection_menu(call: types.CallbackQuery, state: FSMContext) -> None:
+    
+    await deleteSendedMediaGroup(state, call.from_user.id)
+
+    await call.message.edit_text(userWhatsNewTexts.what_is_new_choice_text,
+    reply_markup=await globalKeyboards.what_is_new_selection_menu_kb())
+
+
+# Отправка сообщения со всеми новостями команды
+async def send_team_news(call: types.CallbackQuery, state: FSMContext) -> None:
+    team_news = await AsyncORM.get_team_news()
+    prefix = "team_news"
+
+    async def getTeamNewsButtonsAndAmount():
+        team_news = await AsyncORM.get_team_news()
+
+        buttons = [[types.InlineKeyboardButton(
+        text=team_news_item.name,
+        callback_data=f'{prefix}|{team_news_item.id}')] for team_news_item in team_news]
+
+        return [buttons, len(team_news)]
+    
+    await sendPaginationMessage(call, state, team_news, getTeamNewsButtonsAndAmount,
+    prefix, userWhatsNewTexts.team_news_text, 10, [await globalKeyboards.get_back_to_start_menu_kb_button()])
+
+
+# Отправка сообщения с информацией о новости
+async def show_team_news_item(call: types.CallbackQuery, state: FSMContext) -> None:
+    user_id = call.from_user.id
+    message_id = call.message.message_id
+
+    await bot.delete_message(user_id, message_id)
+
+    temp = call.data.split("|")
+
+    team_news_item_id = int(temp[1])
+
+    team_news_item = await AsyncORM.get_team_news_item_by_id(team_news_item_id)
+
+    if team_news_item:
+        await mediaGroupSend(call, state, team_news_item.photo_file_ids, team_news_item.video_file_ids)
+
+        answer_message_text = userWhatsNewTexts.show_team_news_withoutText_text.format(team_news_item.name)
+
+        if team_news_item.text:
+            if not team_news_item.photo_file_ids and not team_news_item.video_file_ids:
+                answer_message_text = userWhatsNewTexts.show_team_news_text.format(team_news_item.name, team_news_item.text)
+            else:
+                answer_message_text = userWhatsNewTexts.show_team_news_withImages_text.format(team_news_item.name, team_news_item.text)
+
+        await call.message.answer(answer_message_text, 
+        reply_markup=await globalKeyboards.back_to_team_news_selection_menu_kb())
+    else:
+        await call.message.answer(globalTexts.data_notFound_text)
+'''/Что нового?/'''
+
+
 def hand_add():
     '''Глобальное'''
     router.message.register(start, StateFilter("*"), CommandStart())
@@ -262,3 +321,12 @@ def hand_add():
 
     router.callback_query.register(send_about_organization_info, lambda c: c.data == 'start|about_us|about_organization')
     '''/О нас/'''
+
+    '''Что нового?'''
+    router.callback_query.register(send_what_is_new_selection_menu, lambda c: c.data == 'start|what_is_new')
+
+    router.callback_query.register(send_team_news, lambda c: c.data == 'start|what_is_new|team_news')
+    
+    router.callback_query.register(show_team_news_item, lambda c: 
+    re.match(r"^team_news\|(?P<team_news_item_id>\d+)$", c.data))
+    '''/Что нового?/'''

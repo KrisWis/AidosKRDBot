@@ -124,32 +124,37 @@ async def wait_future_concert_holding_time(message: types.Message, album: list[t
 async def wait_future_concert_ticket_price(message: types.Message, state: FSMContext) -> None:
     future_concert_holding_time = message.text
 
-    if re.match(r'^\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}$', future_concert_holding_time):
+    try:
+        if re.match(r'^\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}$', future_concert_holding_time):
 
-        future_concert_holding_time = datetime.datetime.strptime(future_concert_holding_time, '%d.%m.%Y %H:%M')
-        now = datetime.datetime.now()
+            future_concert_holding_time = datetime.datetime.strptime(future_concert_holding_time, '%d.%m.%Y %H:%M')
+            now = datetime.datetime.now()
 
-        if now >= future_concert_holding_time:
-            await message.answer(globalTexts.date_inPastIsInvalid_text)
-            return
-        
-        async def changeHoldingTime(future_concert_replace_id: int):
-            await AsyncORM.change_futureConcert_holding_time(future_concert_replace_id, future_concert_holding_time)
-
-        data = await state.get_data()
-
-        result = await futureConcertChangeInfo(data, state, message, changeHoldingTime, 
-        adminFutureConcertsTexts.change_future_concert_holding_time_success_text)
-
-        if not result:
-            await state.update_data(future_concert_holding_time=future_concert_holding_time)
+            if now >= future_concert_holding_time:
+                await message.answer(globalTexts.date_inPastIsInvalid_text)
+                return
             
-            await message.answer(adminFutureConcertsTexts.wait_future_concert_ticket_price_text)
+            async def changeHoldingTime(future_concert_replace_id: int):
+                await AsyncORM.change_futureConcert_holding_time(future_concert_replace_id, future_concert_holding_time)
 
-            await state.set_state(FutureConcertsStates.wait_ticket_price)
+            data = await state.get_data()
 
-    else:
-        await message.answer(globalTexts.data_isInvalid_text)
+            result = await futureConcertChangeInfo(data, state, message, changeHoldingTime, 
+            adminFutureConcertsTexts.change_future_concert_holding_time_success_text)
+
+            if not result:
+                await state.update_data(future_concert_holding_time=future_concert_holding_time)
+                
+                await message.answer(adminFutureConcertsTexts.wait_future_concert_ticket_price_text)
+
+                await state.set_state(FutureConcertsStates.wait_ticket_price)
+
+            return
+
+    except Exception as e:
+        logger.info(e)
+
+    await message.answer(globalTexts.data_isInvalid_text)
 
 
 # Ожидание информации о стоимости билета предстоящего концерта. Добавление предстоящего концерта в базу данных.

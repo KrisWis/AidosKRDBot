@@ -28,7 +28,7 @@ async def send_previous_concerts(call: types.CallbackQuery, state: FSMContext) -
     
     await sendPaginationMessage(call, state, previous_concerts, getPreviousConcertsButtonsAndAmount,
     prefix, adminPreviousConcertsTexts.previous_concerts_text, 10,
-    [await adminKeyboards.get_previous_concert_kb_button(), 
+    [await adminKeyboards.get_kb_addButton('previous_concerts'), 
     await adminKeyboards.get_back_to_admin_menu_kb_button()])
 
 
