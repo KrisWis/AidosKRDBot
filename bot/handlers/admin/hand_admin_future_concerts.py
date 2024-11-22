@@ -7,7 +7,7 @@ from database.orm import AsyncORM
 from states.Admin import FutureConcertsStates
 from aiogram.filters import StateFilter
 import datetime
-from helpers import albumInfoProcess, mediaGroupSend, sendPaginationMessage, futureConcertChangeInfo
+from helpers import albumInfoProcess, mediaGroupSend, sendPaginationMessage, futureConcertChangeInfo, deleteMessage
 from RunBot import logger
 import re
 
@@ -211,10 +211,7 @@ async def choose_future_concert_info(call: types.CallbackQuery) -> None:
 
 # Отправка сообщения с информацией о предстоящем концерте
 async def show_future_concert_info(call: types.CallbackQuery, state: FSMContext) -> None:
-    user_id = call.from_user.id
-    message_id = call.message.message_id
-
-    await bot.delete_message(user_id, message_id)
+    await deleteMessage(call)
 
     temp = call.data.split("|")
 

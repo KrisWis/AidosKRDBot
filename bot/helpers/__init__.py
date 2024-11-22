@@ -4,3 +4,4 @@ from helpers.mediaGroupSend import mediaGroupSend
 from helpers.sendPaginationMessage import sendPaginationMessage
 from helpers.FutureConcerts.futureConcertChangeInfo import futureConcertChangeInfo
 from helpers.deleteSendedMediaGroup import deleteSendedMediaGroup
+from helpers.deleteMessage import deleteMessage

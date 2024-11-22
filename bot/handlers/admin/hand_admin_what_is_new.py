@@ -4,7 +4,7 @@ from aiogram.fsm.context import FSMContext
 from utils import userWhatsNewTexts, adminWhatIsNewTexts, globalTexts
 from keyboards import adminKeyboards
 from database.orm import AsyncORM
-from helpers import sendPaginationMessage, mediaGroupSend, albumInfoProcess, deleteSendedMediaGroup
+from helpers import sendPaginationMessage, mediaGroupSend, albumInfoProcess, deleteSendedMediaGroup, deleteMessage
 from states.Admin import WhatIsNewStates
 from RunBot import logger
 import datetime
@@ -108,10 +108,7 @@ async def add_team_news_item(message: types.Message, album: list[types.Message] 
 
 # Отправка сообщения с информацией о новости и возможностью удаления/изменения информации
 async def show_team_news_item(call: types.CallbackQuery, state: FSMContext) -> None:
-    user_id = call.from_user.id
-    message_id = call.message.message_id
-
-    await bot.delete_message(user_id, message_id)
+    await deleteMessage(call)
 
     temp = call.data.split("|")
 

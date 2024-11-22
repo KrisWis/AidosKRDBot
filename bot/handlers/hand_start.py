@@ -7,7 +7,7 @@ from database.orm import AsyncORM
 from aiogram.fsm.context import FSMContext
 import datetime
 from InstanceBot import bot
-from helpers import mediaGroupSend, sendPaginationMessage, deleteSendedMediaGroup
+from helpers import mediaGroupSend, sendPaginationMessage, deleteSendedMediaGroup, deleteMessage
 import re
 
 
@@ -82,10 +82,7 @@ async def send_previous_concerts(call: types.CallbackQuery, state: FSMContext) -
 
 # Отправка сообщения с информацией о прошедшем концерте
 async def show_previous_concert(call: types.CallbackQuery, state: FSMContext) -> None:
-    user_id = call.from_user.id
-    message_id = call.message.message_id
-
-    await bot.delete_message(user_id, message_id)
+    await deleteMessage(call)
 
     temp = call.data.split("|")
 
@@ -150,10 +147,7 @@ async def choose_future_concert_info(call: types.CallbackQuery, state: FSMContex
 
 # Отправка сообщения с информацией о предстоящем концерте
 async def show_future_concert_info(call: types.CallbackQuery, state: FSMContext) -> None:
-    user_id = call.from_user.id
-    message_id = call.message.message_id
-
-    await bot.delete_message(user_id, message_id)
+    await deleteMessage(call)
 
     temp = call.data.split("|")
 
@@ -261,10 +255,7 @@ async def send_team_news(call: types.CallbackQuery, state: FSMContext) -> None:
 
 # Отправка сообщения с информацией о новости
 async def show_team_news_item(call: types.CallbackQuery, state: FSMContext) -> None:
-    user_id = call.from_user.id
-    message_id = call.message.message_id
-
-    await bot.delete_message(user_id, message_id)
+    await deleteMessage(call)
 
     temp = call.data.split("|")
 

@@ -8,7 +8,7 @@ from database.orm import AsyncORM
 from states.Admin import PreviousConcertsStates
 import re
 import datetime
-from helpers import albumInfoProcess, mediaGroupSend, sendPaginationMessage
+from helpers import albumInfoProcess, mediaGroupSend, sendPaginationMessage, deleteMessage
 from RunBot import logger
 
 
@@ -96,10 +96,7 @@ async def add_previous_concert(message: types.Message, album: list[types.Message
 
 # Отправка сообщения с информацией о прошедшем концерте и возможностью удаления/изменения информации
 async def show_previous_concert(call: types.CallbackQuery, state: FSMContext) -> None:
-    user_id = call.from_user.id
-    message_id = call.message.message_id
-
-    await bot.delete_message(user_id, message_id)
+    await deleteMessage(call)
 
     temp = call.data.split("|")
 
