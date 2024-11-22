@@ -1,5 +1,5 @@
 from sqlalchemy import *
-from database.models import UsersOrm, PreviousConcertsOrm, FutureConcertsOrm, TeamNewsOrm
+from database.models import UsersOrm, PreviousConcertsOrm, FutureConcertsOrm, TeamNewsOrm, ExclusiveTracksOrm
 from database.db import Base, engine, async_session, date
 from datetime import datetime, timedelta
 from typing import Union
@@ -464,3 +464,92 @@ class AsyncORM:
             
             return False
     '''/TeamNewsORM/'''
+
+
+    '''ExclusiveTracksOrm'''
+    # Получение эксклюзивного трека по id
+    @staticmethod
+    async def get_exclusive_track_by_id(id: int) -> ExclusiveTracksOrm:
+        async with async_session() as session:
+
+            result = await session.execute(
+                select(ExclusiveTracksOrm).where(ExclusiveTracksOrm.id == id))
+            exclusive_track = result.scalar()
+            
+            return exclusive_track
+        
+
+    # Получение эксклюзивного трека по названию
+    @staticmethod
+    async def get_exclusive_track_by_name(name: str) -> ExclusiveTracksOrm:
+        async with async_session() as session:
+
+            result = await session.execute(
+                select(ExclusiveTracksOrm).where(ExclusiveTracksOrm.name == name))
+            exclusive_track = result.scalar()
+            
+            return exclusive_track
+        
+
+    # Добавление эксклюзивного трека в базу данных
+    @staticmethod
+    async def add_exclusive_track(name: str, created_at: Date, audio_file_id: str,
+    audio_file_info: str) -> bool:
+
+        exclusive_track = ExclusiveTracksOrm(name=name, created_at=created_at,
+        audio_file_id=audio_file_id, audio_file_info=audio_file_info)
+
+        async with async_session() as session:
+            session.add(exclusive_track)
+
+            await session.commit() 
+
+        return True
+
+
+    # Получение всех эксклюзивных треков
+    @staticmethod
+    async def get_exclusive_tracks() -> list[ExclusiveTracksOrm]:
+        
+        async with async_session() as session:
+            result = await session.execute(
+                select(ExclusiveTracksOrm).order_by(ExclusiveTracksOrm.created_at.desc()))
+            exclusive_tracks = result.scalars().all()
+            
+            return exclusive_tracks
+        
+
+    # Изменение эксклюзивного трека
+    @staticmethod
+    async def change_exclusive_track(id: int, audio_file_id: str,
+    audio_file_info: str) -> bool:
+
+        async with async_session() as session:
+            result = await session.execute(select(ExclusiveTracksOrm)
+            .where(ExclusiveTracksOrm.id == id))
+            exclusive_track: ExclusiveTracksOrm = result.scalar()
+
+            exclusive_track.audio_file_id = audio_file_id
+            exclusive_track.audio_file_info = audio_file_info
+
+            await session.commit()
+                
+        return True
+    
+
+    # Удаление эксклюзивного трека по id
+    @staticmethod
+    async def delete_exclusive_track(id: int) -> ExclusiveTracksOrm:
+        async with async_session() as session:
+
+            result = await session.execute(select(ExclusiveTracksOrm)
+            .where(ExclusiveTracksOrm.id == id))
+            exclusive_track: ExclusiveTracksOrm = result.scalar()
+            
+            if exclusive_track:
+                await session.delete(exclusive_track)
+                await session.commit()  
+                return True
+            
+            return False
+    '''/ExclusiveTracksOrm/'''

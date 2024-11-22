@@ -8,8 +8,6 @@ from aiogram.types import (
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.storage.base import StorageKey
 from InstanceBot import dp, bot
-from states.Admin import PreviousConcertsStates, FutureConcertsStates
-
 DEFAULT_DELAY = 1.5
 
 class MediaGroupMiddleware(BaseMiddleware):
@@ -36,8 +34,6 @@ class MediaGroupMiddleware(BaseMiddleware):
         current_state = await state_with.get_state()
 
         if not event.media_group_id:
-            if current_state in [PreviousConcertsStates.wait_info, FutureConcertsStates.wait_artist_info, FutureConcertsStates.wait_platform_info]:
-                await asyncio.sleep(self.delay)
             
             return await handler(event, data)
 

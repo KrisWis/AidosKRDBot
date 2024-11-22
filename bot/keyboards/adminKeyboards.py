@@ -86,7 +86,7 @@ async def future_concert_actions_kb(future_concert_id: int, action: str):
 async def what_is_new_selection_menu_kb():
     kb = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='📰 Новости команды', callback_data=f'admin|what_is_new|team_news')],
-    [InlineKeyboardButton(text='🔊 Эксклюзивные треки', callback_data=f'admin|what_is_new|exclusive')],
+    [InlineKeyboardButton(text='🔊 Эксклюзивные треки', callback_data=f'admin|what_is_new|exclusive_tracks')],
     [InlineKeyboardButton(text='🎶 Музыка с концерта', callback_data=f'admin|what_is_new|music')]])
 
     return kb

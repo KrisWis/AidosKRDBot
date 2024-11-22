@@ -75,3 +75,19 @@ class TeamNewsOrm(Base):
     __table_args__ = (
         UniqueConstraint('id', name='unique_team_news_item'),
     )
+
+
+# Таблица c эксклюзивными треками концерта
+class ExclusiveTracksOrm(Base):
+    __tablename__ = "exclusive_tracks"
+    
+    id: Mapped[int] = mapped_column(BigInteger(), primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String())
+    created_at: Mapped[date] = mapped_column(nullable=False)
+
+    audio_file_id: Mapped[str] = mapped_column(String())
+    audio_file_info: Mapped[str] = mapped_column(String())
+
+    __table_args__ = (
+        UniqueConstraint('id', name='unique_exclusive_track'),
+    )

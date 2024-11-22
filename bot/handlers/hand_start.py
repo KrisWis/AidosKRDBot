@@ -235,6 +235,7 @@ async def send_what_is_new_selection_menu(call: types.CallbackQuery, state: FSMC
     reply_markup=await globalKeyboards.what_is_new_selection_menu_kb())
 
 
+'''Новости команды'''
 # Отправка сообщения со всеми новостями команды
 async def send_team_news(call: types.CallbackQuery, state: FSMContext) -> None:
     team_news = await AsyncORM.get_team_news()
@@ -278,6 +279,7 @@ async def show_team_news_item(call: types.CallbackQuery, state: FSMContext) -> N
         reply_markup=await globalKeyboards.back_to_team_news_selection_menu_kb())
     else:
         await call.message.answer(globalTexts.data_notFound_text)
+'''Новости команды'''
 '''/Что нового?/'''
 
 

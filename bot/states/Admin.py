@@ -23,7 +23,15 @@ class FutureConcertsStates(StatesGroup):
 
 '''Что нового?'''
 class WhatIsNewStates(StatesGroup):
-    wait_name = State()
+    '''Новости команды'''
+    team_news_item_wait_name = State()
 
-    wait_info = State()
+    team_news_item_wait_info = State()
+    '''/Новости команды/'''
+
+    '''Эксклюзивные треки'''
+    exclusive_track_wait_name = State()
+
+    exclusive_track_wait_info = State()
+    '''/Эксклюзивные треки/'''
 '''/Что нового?/'''
