@@ -1,5 +1,5 @@
 from sqlalchemy import *
-from database.models import UsersOrm, PreviousConcertsOrm, FutureConcertsOrm, TeamNewsOrm, ExclusiveTracksOrm, ConcertMusicOrm, RebatesOrm
+from database.models import UsersOrm, PreviousConcertsOrm, FutureConcertsOrm, TeamNewsOrm, ExclusiveTracksOrm, ConcertMusicOrm, RebatesOrm, StocksOrm
 from database.db import Base, engine, async_session, date
 from datetime import datetime, timedelta
 from typing import Union
@@ -645,7 +645,7 @@ class AsyncORM:
 
 
     '''RebatesOrm'''
-    # Получение акции по id
+    # Получение скидки по id
     @staticmethod
     async def get_rebate_by_id(id: int) -> RebatesOrm:
         async with async_session() as session:
@@ -657,7 +657,7 @@ class AsyncORM:
             return rebate
         
 
-    # Получение акции по названию
+    # Получение скидки по названию
     @staticmethod
     async def get_rebate_by_name(name: str) -> RebatesOrm:
         async with async_session() as session:
@@ -669,7 +669,7 @@ class AsyncORM:
             return rebate
         
 
-    # Добавление акции в базу данных
+    # Добавление скидки в базу данных
     @staticmethod
     async def add_rebate(name: str, created_at: Date, text: str,
         photo_file_ids: list[str] = [],
@@ -686,7 +686,7 @@ class AsyncORM:
         return True
 
 
-    # Получение всех акций
+    # Получение всех скидок
     @staticmethod
     async def get_all_rebates() -> list[RebatesOrm]:
         
@@ -698,7 +698,7 @@ class AsyncORM:
             return rebate
         
 
-    # Изменение информации акции
+    # Изменение информации о скидке
     @staticmethod
     async def change_rebate_info(id: int, text: str,
         photo_file_ids: list[str], video_file_ids: list[str]) -> bool:
@@ -716,7 +716,7 @@ class AsyncORM:
         return True
     
 
-    # Удаление акции по id
+    # Удаление скидки по id
     @staticmethod
     async def delete_rebate(id: int) -> RebatesOrm:
         async with async_session() as session:
@@ -731,3 +731,92 @@ class AsyncORM:
             
             return False
     '''/RebatesOrm/'''
+
+
+    '''StocksOrm'''
+    # Получение акции по id
+    @staticmethod
+    async def get_stock_by_id(id: int) -> StocksOrm:
+        async with async_session() as session:
+
+            result = await session.execute(
+                select(StocksOrm).where(StocksOrm.id == id))
+            stock = result.scalar()
+            
+            return stock
+        
+
+    # Получение акции по названию
+    @staticmethod
+    async def get_stock_by_name(name: str) -> StocksOrm:
+        async with async_session() as session:
+
+            result = await session.execute(
+                select(StocksOrm).where(StocksOrm.name == name))
+            stock = result.scalar()
+            
+            return stock
+        
+
+    # Добавление акции в базу данных
+    @staticmethod
+    async def add_stock(name: str, created_at: Date, text: str,
+        photo_file_ids: list[str] = [],
+        video_file_ids: list[str] = []) -> bool:
+
+        stock = StocksOrm(name=name, created_at=created_at, text=text,
+        photo_file_ids=photo_file_ids, video_file_ids=video_file_ids)
+
+        async with async_session() as session:
+            session.add(stock)
+
+            await session.commit() 
+
+        return True
+
+
+    # Получение всех акций
+    @staticmethod
+    async def get_all_stocks() -> list[StocksOrm]:
+        
+        async with async_session() as session:
+            result = await session.execute(
+                select(StocksOrm).order_by(StocksOrm.created_at.desc()))
+            stock = result.scalars().all()
+            
+            return stock
+        
+
+    # Изменение информации об акции
+    @staticmethod
+    async def change_stock_info(id: int, text: str,
+        photo_file_ids: list[str], video_file_ids: list[str]) -> bool:
+
+        async with async_session() as session:
+            result = await session.execute(select(StocksOrm).where(StocksOrm.id == id))
+            stock: StocksOrm = result.scalar()
+
+            stock.text = text
+            stock.photo_file_ids = photo_file_ids
+            stock.video_file_ids = video_file_ids
+
+            await session.commit()
+                
+        return True
+    
+
+    # Удаление акции по id
+    @staticmethod
+    async def delete_stock(id: int) -> StocksOrm:
+        async with async_session() as session:
+
+            result = await session.execute(select(StocksOrm).where(StocksOrm.id == id))
+            stock: StocksOrm = result.scalar()
+            
+            if stock:
+                await session.delete(stock)
+                await session.commit()  
+                return True
+            
+            return False
+    '''/StocksOrm/'''

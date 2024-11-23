@@ -45,10 +45,16 @@ class WhatIsNewStates(StatesGroup):
 
 '''Скидки и акции'''
 class DiscountsStates(StatesGroup):
-    '''Акции'''
+    '''Скидки'''
     rebate_wait_name = State()
 
     rebate_wait_info = State()
+    '''/Скидки/'''
+
+    '''Акции'''
+    stock_wait_name = State()
+
+    stock_wait_info = State()
     '''/Акции/'''
 
 '''/Скидки и акции/'''
