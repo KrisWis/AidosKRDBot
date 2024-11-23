@@ -15,11 +15,11 @@ import re
 '''Предстоящие концерты'''
 # Отправка сообщения со всеми прошедшими концертами
 async def send_future_concerts(call: types.CallbackQuery, state: FSMContext) -> None:
-    future_concerts = await AsyncORM.get_future_concerts()
+    future_concerts = await AsyncORM.get_all_future_concerts()
     prefix = "admin_future_concerts"
 
     async def getFutureConcertsButtonsAndAmount():
-        future_concerts = await AsyncORM.get_future_concerts()
+        future_concerts = await AsyncORM.get_all_future_concerts()
 
         buttons = [[types.InlineKeyboardButton(
         text=f"{future_concert.name if len(future_concert.name) <= 35 else future_concert.name[:35] + '...'} — {future_concert.holding_time.strftime("%d.%m.%Y %H:%M")}",

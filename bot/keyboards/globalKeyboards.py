@@ -9,16 +9,16 @@ async def start_menu_kb():
     InlineKeyboardButton(text='▶️ Предстоящие концерты', callback_data='start|future_concerts')],
     [InlineKeyboardButton(text='ℹ️ О нас', callback_data='start|about_us'),
     InlineKeyboardButton(text='❓ Что нового?', callback_data='start|what_is_new')],
-    [InlineKeyboardButton(text='👥 Наши партнёры', callback_data='start|out_partners')],
-    [InlineKeyboardButton(text='📊 Статистика', callback_data='start|stats')]])
+    [InlineKeyboardButton(text='💲 Скидки и акции', callback_data='start|discounts'),
+    InlineKeyboardButton(text='👥 Наши партнёры', callback_data='start|out_partners')]])
 
     return kb
 
 
 # Инлайн-клавиатура для перехода обратно в меню выбора
-async def back_to_selection_menu_kb(call_data: str):
+async def back_to_selection_menu_kb(callback_data: str):
     kb = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='🔙 Обратно в меню выбора', callback_data=call_data)]])
+    [InlineKeyboardButton(text='🔙 Обратно в меню выбора', callback_data=callback_data)]])
 
     return kb
 
@@ -60,12 +60,12 @@ async def what_is_new_selection_menu_kb():
     kb = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='📰 Новости команды', callback_data=f'start|what_is_new|team_news')],
     [InlineKeyboardButton(text='🔊 Эксклюзивные треки', callback_data=f'start|what_is_new|exclusive_tracks')],
-    [InlineKeyboardButton(text='🎶 Музыка с концерта', callback_data=f'start|what_is_new|music')]])
+    [InlineKeyboardButton(text='🎶 Музыка с концерта', callback_data=f'start|what_is_new|concert_music')]])
 
     return kb
 
 
 # Получение кнопки для возвращения в меню выбора новостей
-async def get_team_news_kb_backToSelectionMenuButton():
+async def get_all_team_news_kb_backToSelectionMenuButton():
     return InlineKeyboardButton(text='🔙 Обратно в меню выбора', callback_data='start|what_is_new')
 '''/Что нового?/'''

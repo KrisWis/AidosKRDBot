@@ -32,6 +32,11 @@ async def get_kb_addButton(prefix: str):
     return InlineKeyboardButton(text='➕ Добавить', callback_data=f'admin|{prefix}|add')
 
 
+# Получение кнопки для возвращения в меню выбора
+async def get_kb_backToSelectionMenuButton(callback_data: str):
+    return InlineKeyboardButton(text='🔙 Обратно в меню выбора', callback_data=callback_data)
+
+
 # Инлайн-клавиатура для взаимодействия с данными
 async def actions_kb(id: int, prefix: str):
     kb = InlineKeyboardMarkup(inline_keyboard=[
@@ -87,12 +92,7 @@ async def what_is_new_selection_menu_kb():
     kb = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='📰 Новости команды', callback_data=f'admin|what_is_new|team_news')],
     [InlineKeyboardButton(text='🔊 Эксклюзивные треки', callback_data=f'admin|what_is_new|exclusive_tracks')],
-    [InlineKeyboardButton(text='🎶 Музыка с концерта', callback_data=f'admin|what_is_new|music')]])
+    [InlineKeyboardButton(text='🎶 Музыка с концерта', callback_data=f'admin|what_is_new|concert_music')]])
 
     return kb
-
-
-# Получение кнопки для возвращения в меню выбора новостей
-async def get_team_news_kb_backToSelectionMenuButton():
-    return InlineKeyboardButton(text='🔙 Обратно в меню выбора', callback_data='admin|what_is_new')
 '''/Что нового?/'''

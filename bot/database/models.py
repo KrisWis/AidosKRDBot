@@ -91,3 +91,19 @@ class ExclusiveTracksOrm(Base):
     __table_args__ = (
         UniqueConstraint('id', name='unique_exclusive_track'),
     )
+
+
+# Таблица c музыкой с концертов
+class ConcertMusicOrm(Base):
+    __tablename__ = "concert_music"
+    
+    id: Mapped[int] = mapped_column(BigInteger(), primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String())
+    created_at: Mapped[date] = mapped_column(nullable=False)
+
+    audio_file_id: Mapped[str] = mapped_column(String())
+    audio_file_info: Mapped[str] = mapped_column(String())
+
+    __table_args__ = (
+        UniqueConstraint('id', name='unique_concert_music'),
+    )

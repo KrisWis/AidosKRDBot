@@ -63,11 +63,11 @@ async def start_from_kb(call: types.CallbackQuery, state: FSMContext) -> None:
 '''Прошедшие концерты'''
 # Отправка сообщения со всеми прошедшими концертами
 async def send_previous_concerts(call: types.CallbackQuery, state: FSMContext) -> None:
-    previous_concerts = await AsyncORM.get_previous_concerts()
+    previous_concerts = await AsyncORM.get_all_previous_concerts()
     prefix = "previous_concerts"
 
     async def getPreviousConcertsButtonsAndAmount():
-        previous_concerts = await AsyncORM.get_previous_concerts()
+        previous_concerts = await AsyncORM.get_all_previous_concerts()
 
         buttons = [[types.InlineKeyboardButton(text=f"{previous_concert.name}",
         callback_data=f'{prefix}|{previous_concert.id}')] for previous_concert in previous_concerts]
@@ -111,11 +111,11 @@ async def show_previous_concert(call: types.CallbackQuery, state: FSMContext) ->
 # Отправка сообщения со всеми предстоящими концертами
 async def send_future_concerts(call: types.CallbackQuery, state: FSMContext) -> None:
 
-    future_concerts = await AsyncORM.get_future_concerts()
+    future_concerts = await AsyncORM.get_all_future_concerts()
     prefix = "future_concerts"
 
     async def getFutureConcertsButtonsAndAmount():
-        future_concerts = await AsyncORM.get_future_concerts()
+        future_concerts = await AsyncORM.get_all_future_concerts()
 
         buttons = [[types.InlineKeyboardButton(
         text=f"{future_concert.name if len(future_concert.name) <= 35 else future_concert.name[:35] + '...'} — {future_concert.holding_time.strftime("%d.%m.%Y %H:%M")}",
@@ -238,11 +238,11 @@ async def send_what_is_new_selection_menu(call: types.CallbackQuery, state: FSMC
 '''Новости команды'''
 # Отправка сообщения со всеми новостями команды
 async def send_team_news(call: types.CallbackQuery, state: FSMContext) -> None:
-    team_news = await AsyncORM.get_team_news()
+    team_news = await AsyncORM.get_all_team_news()
     prefix = "team_news"
 
     async def getTeamNewsButtonsAndAmount():
-        team_news = await AsyncORM.get_team_news()
+        team_news = await AsyncORM.get_all_team_news()
 
         buttons = [[types.InlineKeyboardButton(
         text=team_news_item.name,
@@ -285,11 +285,11 @@ async def show_team_news_item(call: types.CallbackQuery, state: FSMContext) -> N
 '''Эксклюзивные треки'''
 # Отправка сообщения со всеми эксклюзивными треками
 async def send_exclusive_tracks(call: types.CallbackQuery, state: FSMContext) -> None:
-    exclusive_tracks = await AsyncORM.get_exclusive_tracks()
+    exclusive_tracks = await AsyncORM.get_all_exclusive_tracks()
     prefix = "exclusive_tracks"
 
     async def getExclusiveTracksButtonsAndAmount():
-        exclusive_tracks = await AsyncORM.get_exclusive_tracks()
+        exclusive_tracks = await AsyncORM.get_all_exclusive_tracks()
 
         buttons = [[types.InlineKeyboardButton(
         text=exclusive_track.name,
@@ -319,6 +319,45 @@ async def show_exclusive_track(call: types.CallbackQuery) -> None:
     else:
         await call.message.answer(globalTexts.data_notFound_text)
 '''/Эксклюзивные треки/'''
+
+
+'''Музыка с концерта'''
+# Отправка сообщения со всей музыкой с концертов
+async def send_concert_music(call: types.CallbackQuery, state: FSMContext) -> None:
+    concert_music = await AsyncORM.get_all_concert_music()
+    prefix = "concert_music"
+
+    async def getConcertMusicButtonsAndAmount():
+        concert_music = await AsyncORM.get_all_concert_music()
+
+        buttons = [[types.InlineKeyboardButton(
+        text=concert_music_item.name,
+        callback_data=f'{prefix}|{concert_music_item.id}')] for concert_music_item in concert_music]
+
+        return [buttons, len(concert_music)]
+    
+    await sendPaginationMessage(call, state, concert_music, getConcertMusicButtonsAndAmount,
+    prefix, userWhatsNewTexts.concert_music_text, 10, 
+    [await globalKeyboards.get_back_to_start_menu_kb_button()])
+
+
+# Отправка сообщения с музыкой с концерта
+async def show_concert_music(call: types.CallbackQuery) -> None:
+    await deleteMessage(call)
+
+    temp = call.data.split("|")
+
+    concert_music_item_id = int(temp[1])
+
+    concert_music_item = await AsyncORM.get_concert_music_item_by_id(concert_music_item_id)
+
+    if concert_music_item:
+        await call.message.answer_audio(audio=concert_music_item.audio_file_id,
+        caption=concert_music_item.audio_file_info,
+        reply_markup=await globalKeyboards.back_to_selection_menu_kb('start|what_is_new|concert_music'))
+    else:
+        await call.message.answer(globalTexts.data_notFound_text)
+'''/Музыка с концерта/'''
 '''/Что нового?/'''
 
 
@@ -370,4 +409,11 @@ def hand_add():
     router.callback_query.register(show_exclusive_track, lambda c: 
     re.match(r"^exclusive_tracks\|(?P<exclusive_track_id>\d+)$", c.data))
     '''/Эксклюзивные треки/'''
+
+    '''Музыка с концерта'''
+    router.callback_query.register(send_concert_music, lambda c: c.data == 'start|what_is_new|concert_music')
+
+    router.callback_query.register(show_concert_music, lambda c: 
+    re.match(r"^concert_music\|(?P<concert_music_item_id>\d+)$", c.data))
+    '''/Музыка с концерта/'''
     '''/Что нового?/'''

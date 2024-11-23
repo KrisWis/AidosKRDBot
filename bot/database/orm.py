@@ -1,5 +1,5 @@
 from sqlalchemy import *
-from database.models import UsersOrm, PreviousConcertsOrm, FutureConcertsOrm, TeamNewsOrm, ExclusiveTracksOrm
+from database.models import UsersOrm, PreviousConcertsOrm, FutureConcertsOrm, TeamNewsOrm, ExclusiveTracksOrm, ConcertMusicOrm
 from database.db import Base, engine, async_session, date
 from datetime import datetime, timedelta
 from typing import Union
@@ -33,7 +33,7 @@ class AsyncORM:
 
     # Получение пользователей по параметрам
     @staticmethod
-    async def get_users(period: str = None, geo: str = None) -> list[UsersOrm] | str:
+    async def get_all_users(period: str = None, geo: str = None) -> list[UsersOrm] | str:
         
         now = datetime.now()
         date = now - timedelta(weeks=100000)
@@ -75,7 +75,7 @@ class AsyncORM:
                 msg = ''
                 for i in count_geo:
                     msg += f'{i}: {count_geo[i]} ' \
-                        f'({round(count_geo[i] / len(await AsyncORM.get_users(period=period)) * 100, 2)}%)'
+                        f'({round(count_geo[i] / len(await AsyncORM.get_all_users(period=period)) * 100, 2)}%)'
 
                 return msg if msg else 'Не обнаружено'
 
@@ -145,7 +145,7 @@ class AsyncORM:
 
     # Получение всех прошедших концертов
     @staticmethod
-    async def get_previous_concerts() -> list[PreviousConcertsOrm]:
+    async def get_all_previous_concerts() -> list[PreviousConcertsOrm]:
         
         async with async_session() as session:
             result = await session.execute(
@@ -284,7 +284,7 @@ class AsyncORM:
 
     # Получение всех предстоящих концертов
     @staticmethod
-    async def get_future_concerts() -> list[FutureConcertsOrm]:
+    async def get_all_future_concerts() -> list[FutureConcertsOrm]:
         
         async with async_session() as session:
             result = await session.execute(
@@ -421,7 +421,7 @@ class AsyncORM:
 
     # Получение всех новостей команды
     @staticmethod
-    async def get_team_news() -> list[TeamNewsOrm]:
+    async def get_all_team_news() -> list[TeamNewsOrm]:
         
         async with async_session() as session:
             result = await session.execute(
@@ -509,7 +509,7 @@ class AsyncORM:
 
     # Получение всех эксклюзивных треков
     @staticmethod
-    async def get_exclusive_tracks() -> list[ExclusiveTracksOrm]:
+    async def get_all_exclusive_tracks() -> list[ExclusiveTracksOrm]:
         
         async with async_session() as session:
             result = await session.execute(
@@ -553,3 +553,92 @@ class AsyncORM:
             
             return False
     '''/ExclusiveTracksOrm/'''
+
+
+    '''ConcertMusicOrm'''
+    # Получение музыки с концерта по id
+    @staticmethod
+    async def get_concert_music_item_by_id(id: int) -> ConcertMusicOrm:
+        async with async_session() as session:
+
+            result = await session.execute(
+                select(ConcertMusicOrm).where(ConcertMusicOrm.id == id))
+            concert_music = result.scalar()
+            
+            return concert_music
+        
+
+    # Получение музыки с концерта по названию
+    @staticmethod
+    async def get_concert_music_item_by_name(name: str) -> ConcertMusicOrm:
+        async with async_session() as session:
+
+            result = await session.execute(
+                select(ConcertMusicOrm).where(ConcertMusicOrm.name == name))
+            concert_music = result.scalar()
+            
+            return concert_music
+        
+
+    # Добавление музыки с концерта в базу данных
+    @staticmethod
+    async def add_concert_music_item(name: str, created_at: Date, audio_file_id: str,
+    audio_file_info: str) -> bool:
+
+        concert_music = ConcertMusicOrm(name=name, created_at=created_at,
+        audio_file_id=audio_file_id, audio_file_info=audio_file_info)
+
+        async with async_session() as session:
+            session.add(concert_music)
+
+            await session.commit() 
+
+        return True
+
+
+    # Получение всей музыки с концерта
+    @staticmethod
+    async def get_all_concert_music() -> list[ConcertMusicOrm]:
+        
+        async with async_session() as session:
+            result = await session.execute(
+                select(ConcertMusicOrm).order_by(ConcertMusicOrm.created_at.desc()))
+            concert_music = result.scalars().all()
+            
+            return concert_music
+        
+
+    # Изменение музыки с концерта
+    @staticmethod
+    async def change_concert_music_item(id: int, audio_file_id: str,
+    audio_file_info: str) -> bool:
+
+        async with async_session() as session:
+            result = await session.execute(select(ConcertMusicOrm)
+            .where(ConcertMusicOrm.id == id))
+            concert_music: ConcertMusicOrm = result.scalar()
+
+            concert_music.audio_file_id = audio_file_id
+            concert_music.audio_file_info = audio_file_info
+
+            await session.commit()
+                
+        return True
+    
+
+    # Удаление музыки с концерта по id
+    @staticmethod
+    async def delete_concert_music_item(id: int) -> ConcertMusicOrm:
+        async with async_session() as session:
+
+            result = await session.execute(select(ConcertMusicOrm)
+            .where(ConcertMusicOrm.id == id))
+            concert_music: ConcertMusicOrm = result.scalar()
+            
+            if concert_music:
+                await session.delete(concert_music)
+                await session.commit()  
+                return True
+            
+            return False
+    '''/ConcertMusicOrm/'''

@@ -15,11 +15,11 @@ from RunBot import logger
 '''Прошедшие концерты'''
 # Отправка сообщения со всеми прошедшими концертами
 async def send_previous_concerts(call: types.CallbackQuery, state: FSMContext) -> None:
-    previous_concerts = await AsyncORM.get_previous_concerts()
+    previous_concerts = await AsyncORM.get_all_previous_concerts()
     prefix = "admin_previous_concerts"
 
     async def getPreviousConcertsButtonsAndAmount():
-        previous_concerts = await AsyncORM.get_previous_concerts()
+        previous_concerts = await AsyncORM.get_all_previous_concerts()
 
         buttons = [[types.InlineKeyboardButton(text=f"{previous_concert.name}",
         callback_data=f'{prefix}|{previous_concert.id}')] for previous_concert in previous_concerts]

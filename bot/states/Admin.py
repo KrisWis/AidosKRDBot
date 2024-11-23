@@ -34,4 +34,10 @@ class WhatIsNewStates(StatesGroup):
 
     exclusive_track_wait_info = State()
     '''/Эксклюзивные треки/'''
+
+    '''Музыка с концерта'''
+    concert_music_item_wait_name = State()
+
+    concert_music_item_wait_info = State()
+    '''/Музыка с концерта/'''
 '''/Что нового?/'''
