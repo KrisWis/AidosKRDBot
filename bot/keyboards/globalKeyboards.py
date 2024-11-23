@@ -15,10 +15,10 @@ async def start_menu_kb():
     return kb
 
 
-# Инлайн-клавиатура для перехода обратно в меню прошедших концертов
-async def back_to_previous_concerts_menu_kb():
+# Инлайн-клавиатура для перехода обратно в меню выбора
+async def back_to_selection_menu_kb(call_data: str):
     kb = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='🔙 Обратно в меню выбора', callback_data='start|previous_concerts')]])
+    [InlineKeyboardButton(text='🔙 Обратно в меню выбора', callback_data=call_data)]])
 
     return kb
 
@@ -41,14 +41,6 @@ async def get_future_concert_info_kb(future_concert_id: int):
     [InlineKeyboardButton(text='🔙 Обратно в меню', callback_data=f'start')]])
 
     return kb
-
-
-# Инлайн-клавиатура для возврата обратно в меню выбора
-async def back_to_future_concert_selection_menu_kb(future_concert_id: int):
-    kb = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='🔙 Обратно в меню выбора', callback_data=f'future_concerts|{future_concert_id}')]])
-
-    return kb
 '''/Предстоящие концерты/'''
 
 '''О нас'''
@@ -60,14 +52,6 @@ async def about_us_choice_kb():
     [InlineKeyboardButton(text='🔙 Назад', callback_data='start')]])
 
     return kb
-
-
-# Инлайн-клавиатура для возврата обратно в меню выбора информации
-async def back_to_about_us_selection_menu_kb():
-    kb = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='🔙 Обратно в меню выбора', callback_data='start|about_us')]])
-
-    return kb
 '''/О нас/'''
 
 '''Что нового?'''
@@ -75,7 +59,7 @@ async def back_to_about_us_selection_menu_kb():
 async def what_is_new_selection_menu_kb():
     kb = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='📰 Новости команды', callback_data=f'start|what_is_new|team_news')],
-    [InlineKeyboardButton(text='🔊 Эксклюзивные треки', callback_data=f'start|what_is_new|exclusive')],
+    [InlineKeyboardButton(text='🔊 Эксклюзивные треки', callback_data=f'start|what_is_new|exclusive_tracks')],
     [InlineKeyboardButton(text='🎶 Музыка с концерта', callback_data=f'start|what_is_new|music')]])
 
     return kb
@@ -84,12 +68,4 @@ async def what_is_new_selection_menu_kb():
 # Получение кнопки для возвращения в меню выбора новостей
 async def get_team_news_kb_backToSelectionMenuButton():
     return InlineKeyboardButton(text='🔙 Обратно в меню выбора', callback_data='start|what_is_new')
-
-
-# Инлайн-клавиатура для возврата обратно в меню выбора новости
-async def back_to_team_news_selection_menu_kb():
-    kb = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='🔙 Обратно в меню выбора', callback_data='start|what_is_new|team_news')]])
-
-    return kb
 '''/Что нового?/'''

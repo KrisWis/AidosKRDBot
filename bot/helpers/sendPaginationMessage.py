@@ -5,6 +5,7 @@ from typing import Callable, Union, Awaitable
 from helpers import Paginator
 import math
 from helpers.deleteSendedMediaGroup import deleteSendedMediaGroup
+from helpers.deleteMessage import deleteMessage
 
 
 # Отправка сообщения с пагинацией в зависимости от входных данных
@@ -12,8 +13,8 @@ async def sendPaginationMessage(call: CallbackQuery, state: FSMContext, items: l
     getButtonsAndAmount: Callable[[], Awaitable[Union[list[InlineKeyboardButton], int]]],
     prefix: str, text: str, items_per_page: int = 10,
     extra_buttons: list[InlineKeyboardButton] = [], extra_button_beforeActionsButtons: bool = True) -> None:
-    data = await state.get_data()
-        
+    await deleteMessage(call)
+    
     if len(items):
 
         paginator = Paginator()
@@ -25,7 +26,7 @@ async def sendPaginationMessage(call: CallbackQuery, state: FSMContext, items: l
         await deleteSendedMediaGroup(state, call.from_user.id)
 
         pages_amount = math.ceil(len(items) / items_per_page)
-        await call.message.edit_text(f"(1/{pages_amount}) " + text,
+        await call.message.answer(f"(1/{pages_amount}) " + text,
                 reply_markup=paginator_kb)
     else:
         inline_keyboard = []
@@ -36,4 +37,4 @@ async def sendPaginationMessage(call: CallbackQuery, state: FSMContext, items: l
         kb = InlineKeyboardMarkup(
         inline_keyboard=inline_keyboard)
 
-        await call.message.edit_text(globalTexts.data_notFound_text, reply_markup=kb)
+        await call.message.answer(globalTexts.data_notFound_text, reply_markup=kb)

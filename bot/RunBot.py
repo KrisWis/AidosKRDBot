@@ -9,8 +9,6 @@ from middlewares import MediaGroupMiddleware
 logger = logging.getLogger(__name__)
 logging.basicConfig(filename='Logs.log', level=logging.INFO)
 
-# TODO: сделать эксклюзивные треки для юзера
-
 async def on_startup() -> None:
 
     # Пересоздаём таблицы в базе данных (для тестов).

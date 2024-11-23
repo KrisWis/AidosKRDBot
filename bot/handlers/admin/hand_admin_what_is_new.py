@@ -204,7 +204,7 @@ async def send_exclusive_tracks(call: types.CallbackQuery, state: FSMContext) ->
         return [buttons, len(exclusive_tracks)]
     
     await sendPaginationMessage(call, state, exclusive_tracks, getExclusiveTracksButtonsAndAmount,
-    prefix, userWhatsNewTexts.exclusive_from_concert_text, 10, 
+    prefix, adminWhatIsNewTexts.exclusive_tracks_text, 10, 
     [await adminKeyboards.get_kb_addButton('exclusive_tracks'), 
     await adminKeyboards.get_team_news_kb_backToSelectionMenuButton()])
 
@@ -272,8 +272,8 @@ async def add_exclusive_track(message: types.Message, state: FSMContext):
     await state.clear()
 
 
-# Отправка сообщения с информацией эксклюзивным треком и возможностью удаления/изменения информации
-async def show_exclusive_track(call: types.CallbackQuery, state: FSMContext) -> None:
+# Отправка сообщения с эксклюзивным треком и возможностью удаления/изменения информации
+async def show_exclusive_track(call: types.CallbackQuery) -> None:
     await deleteMessage(call)
 
     temp = call.data.split("|")

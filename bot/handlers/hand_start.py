@@ -169,7 +169,7 @@ async def show_future_concert_info(call: types.CallbackQuery, state: FSMContext)
                 answer_message_text = userFutureConcertsTexts.show_future_concert_artist_info_withImages_text.format(artist_info[0])
 
         await call.message.answer(answer_message_text,
-        reply_markup=await globalKeyboards.back_to_future_concert_selection_menu_kb(future_concert_id))
+        reply_markup=await globalKeyboards.back_to_selection_menu_kb(f'future_concerts|{future_concert_id}'))
 
     elif choosing_info == "platform":
         platform_info = await AsyncORM.get_future_concert_platform_info_by_id(future_concert_id)
@@ -185,13 +185,13 @@ async def show_future_concert_info(call: types.CallbackQuery, state: FSMContext)
                 answer_message_text = userFutureConcertsTexts.show_future_concert_platform_info_withImages_text.format(platform_info[0])
 
         await call.message.answer(answer_message_text,
-        reply_markup=await globalKeyboards.back_to_future_concert_selection_menu_kb(future_concert_id))
+        reply_markup=await globalKeyboards.back_to_selection_menu_kb(f'future_concerts|{future_concert_id}'))
     
     elif choosing_info == "price":
         ticket_price = await AsyncORM.get_future_concert_ticket_price_by_id(future_concert_id)
 
         await call.message.answer(userFutureConcertsTexts.show_future_concert_ticket_price_text.
-        format(ticket_price), reply_markup=await globalKeyboards.back_to_future_concert_selection_menu_kb(future_concert_id))
+        format(ticket_price), reply_markup=await globalKeyboards.back_to_selection_menu_kb(f'future_concerts|{future_concert_id}'))
 
 
     elif choosing_info == "time":
@@ -200,7 +200,7 @@ async def show_future_concert_info(call: types.CallbackQuery, state: FSMContext)
         formatted_time = holding_time.strftime("%d.%m.%Y %H:%M")
 
         await call.message.answer(userFutureConcertsTexts.show_future_concert_holding_time_text.
-        format(formatted_time), reply_markup=await globalKeyboards.back_to_future_concert_selection_menu_kb(future_concert_id))
+        format(formatted_time), reply_markup=await globalKeyboards.back_to_selection_menu_kb(f'future_concerts|{future_concert_id}'))
 '''/Предстоящие концерты/'''
 
 
@@ -214,14 +214,14 @@ async def send_about_us_choice(call: types.CallbackQuery) -> None:
 # Отправка сообщения с информацией о нас
 async def send_about_us_info(call: types.CallbackQuery) -> None:
 
-    await call.message.edit_text(userAboutUsTexts.about_us_text, reply_markup=await globalKeyboards.back_to_about_us_selection_menu_kb())
+    await call.message.edit_text(userAboutUsTexts.about_us_text, reply_markup=await globalKeyboards.back_to_selection_menu_kb('start|about_us'))
 
 
 # Отправка сообщения с информацией о нас
 async def send_about_organization_info(call: types.CallbackQuery) -> None:
 
     await call.message.edit_text(userAboutUsTexts.about_organization_text,
-    reply_markup=await globalKeyboards.back_to_about_us_selection_menu_kb())
+    reply_markup=await globalKeyboards.back_to_selection_menu_kb('start|about_us'))
 '''/О нас/'''
 
 
@@ -276,10 +276,49 @@ async def show_team_news_item(call: types.CallbackQuery, state: FSMContext) -> N
                 answer_message_text = userWhatsNewTexts.show_team_news_withImages_text.format(team_news_item.name, team_news_item.text)
 
         await call.message.answer(answer_message_text, 
-        reply_markup=await globalKeyboards.back_to_team_news_selection_menu_kb())
+        reply_markup=await globalKeyboards.back_to_selection_menu_kb('start|what_is_new|team_news'))
     else:
         await call.message.answer(globalTexts.data_notFound_text)
 '''Новости команды'''
+
+
+'''Эксклюзивные треки'''
+# Отправка сообщения со всеми эксклюзивными треками
+async def send_exclusive_tracks(call: types.CallbackQuery, state: FSMContext) -> None:
+    exclusive_tracks = await AsyncORM.get_exclusive_tracks()
+    prefix = "exclusive_tracks"
+
+    async def getExclusiveTracksButtonsAndAmount():
+        exclusive_tracks = await AsyncORM.get_exclusive_tracks()
+
+        buttons = [[types.InlineKeyboardButton(
+        text=exclusive_track.name,
+        callback_data=f'{prefix}|{exclusive_track.id}')] for exclusive_track in exclusive_tracks]
+
+        return [buttons, len(exclusive_tracks)]
+    
+    await sendPaginationMessage(call, state, exclusive_tracks, getExclusiveTracksButtonsAndAmount,
+    prefix, userWhatsNewTexts.exclusive_from_concert_text, 10, 
+    [await globalKeyboards.get_back_to_start_menu_kb_button()])
+
+
+# Отправка сообщения с эксклюзивным треком
+async def show_exclusive_track(call: types.CallbackQuery) -> None:
+    await deleteMessage(call)
+
+    temp = call.data.split("|")
+
+    exclusive_track_id = int(temp[1])
+
+    exclusive_track = await AsyncORM.get_exclusive_track_by_id(exclusive_track_id)
+
+    if exclusive_track:
+        await call.message.answer_audio(audio=exclusive_track.audio_file_id,
+        caption=exclusive_track.audio_file_info,
+        reply_markup=await globalKeyboards.back_to_selection_menu_kb('start|what_is_new|exclusive_tracks'))
+    else:
+        await call.message.answer(globalTexts.data_notFound_text)
+'''/Эксклюзивные треки/'''
 '''/Что нового?/'''
 
 
@@ -316,10 +355,19 @@ def hand_add():
     '''/О нас/'''
 
     '''Что нового?'''
+    '''Новости команды'''
     router.callback_query.register(send_what_is_new_selection_menu, lambda c: c.data == 'start|what_is_new')
 
     router.callback_query.register(send_team_news, lambda c: c.data == 'start|what_is_new|team_news')
     
     router.callback_query.register(show_team_news_item, lambda c: 
     re.match(r"^team_news\|(?P<team_news_item_id>\d+)$", c.data))
+    '''/Новости команды/'''
+
+    '''Эксклюзивные треки'''
+    router.callback_query.register(send_exclusive_tracks, lambda c: c.data == 'start|what_is_new|exclusive_tracks')
+
+    router.callback_query.register(show_exclusive_track, lambda c: 
+    re.match(r"^exclusive_tracks\|(?P<exclusive_track_id>\d+)$", c.data))
+    '''/Эксклюзивные треки/'''
     '''/Что нового?/'''
