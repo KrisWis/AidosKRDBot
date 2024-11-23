@@ -1,7 +1,7 @@
 from aiogram import types
 from InstanceBot import router
 from aiogram.filters import CommandStart, StateFilter
-from utils import globalTexts, userPreviousConcertsTexts, userFutureConcertsTexts, userAboutUsTexts, userWhatsNewTexts
+from utils import globalTexts, userPreviousConcertsTexts, userFutureConcertsTexts, userAboutUsTexts, userWhatsNewTexts, userDiscountsTexts
 from keyboards import globalKeyboards
 from database.orm import AsyncORM
 from aiogram.fsm.context import FSMContext
@@ -124,7 +124,8 @@ async def send_future_concerts(call: types.CallbackQuery, state: FSMContext) -> 
         return [buttons, len(future_concerts)]
     
     await sendPaginationMessage(call, state, future_concerts, getFutureConcertsButtonsAndAmount,
-    prefix, userFutureConcertsTexts.future_concerts_text, 10, [await globalKeyboards.get_back_to_start_menu_kb_button()],
+    prefix, userFutureConcertsTexts.future_concerts_text, 10, 
+    [await globalKeyboards.get_back_to_start_menu_kb_button()],
     False)
 
 
@@ -251,7 +252,8 @@ async def send_team_news(call: types.CallbackQuery, state: FSMContext) -> None:
         return [buttons, len(team_news)]
     
     await sendPaginationMessage(call, state, team_news, getTeamNewsButtonsAndAmount,
-    prefix, userWhatsNewTexts.team_news_text, 10, [await globalKeyboards.get_back_to_start_menu_kb_button()])
+    prefix, userWhatsNewTexts.team_news_text, 10, 
+    [await globalKeyboards.get_back_to_selection_menu_kb_button('start|what_is_new')], False)
 
 
 # Отправка сообщения с информацией о новости
@@ -299,7 +301,7 @@ async def send_exclusive_tracks(call: types.CallbackQuery, state: FSMContext) ->
     
     await sendPaginationMessage(call, state, exclusive_tracks, getExclusiveTracksButtonsAndAmount,
     prefix, userWhatsNewTexts.exclusive_from_concert_text, 10, 
-    [await globalKeyboards.get_back_to_start_menu_kb_button()])
+    [await globalKeyboards.get_back_to_selection_menu_kb_button('start|what_is_new')], False)
 
 
 # Отправка сообщения с эксклюзивным треком
@@ -338,7 +340,7 @@ async def send_concert_music(call: types.CallbackQuery, state: FSMContext) -> No
     
     await sendPaginationMessage(call, state, concert_music, getConcertMusicButtonsAndAmount,
     prefix, userWhatsNewTexts.concert_music_text, 10, 
-    [await globalKeyboards.get_back_to_start_menu_kb_button()])
+    [await globalKeyboards.get_back_to_selection_menu_kb_button('start|what_is_new')], False)
 
 
 # Отправка сообщения с музыкой с концерта
@@ -359,6 +361,113 @@ async def show_concert_music(call: types.CallbackQuery) -> None:
         await call.message.answer(globalTexts.data_notFound_text)
 '''/Музыка с концерта/'''
 '''/Что нового?/'''
+
+
+'''Скидки и акции'''
+# Отправка сообщения с меню выбора "Скидки и акции"
+async def send_discounts_selection_menu(call: types.CallbackQuery, state: FSMContext) -> None:
+    
+    await deleteSendedMediaGroup(state, call.from_user.id)
+
+    await call.message.edit_text(userDiscountsTexts.discounts_choice_text,
+    reply_markup=await globalKeyboards.discounts_selection_menu_kb())
+
+
+'''Скидки'''
+# Отправка сообщения со всеми акциями
+async def send_rebates(call: types.CallbackQuery, state: FSMContext) -> None:
+    rebates = await AsyncORM.get_all_rebates()
+    prefix = "rebates"
+
+    async def getRebatesButtonsAndAmount():
+        rebates = await AsyncORM.get_all_rebates()
+
+        buttons = [[types.InlineKeyboardButton(
+        text=rebate.name,
+        callback_data=f'{prefix}|{rebate.id}')] for rebate in rebates]
+
+        return [buttons, len(rebates)]
+    
+    await sendPaginationMessage(call, state, rebates, getRebatesButtonsAndAmount,
+    prefix, userDiscountsTexts.rebates_text, 10,
+    [await globalKeyboards.get_back_to_selection_menu_kb_button('start|discounts')], False)
+
+
+# Отправка сообщения с информацией о скидке
+async def show_rebate(call: types.CallbackQuery, state: FSMContext) -> None:
+    await deleteMessage(call)
+
+    temp = call.data.split("|")
+
+    rebate_id = int(temp[1])
+
+    rebate = await AsyncORM.get_rebate_by_id(rebate_id)
+
+    if rebate:
+        await mediaGroupSend(call, state, rebate.photo_file_ids, rebate.video_file_ids)
+
+        answer_message_text = userDiscountsTexts.show_rebates_withoutText_text.format(rebate.name)
+
+        if rebate.text:
+            if not rebate.photo_file_ids and not rebate.video_file_ids:
+                answer_message_text = userDiscountsTexts.show_rebates_text.format(rebate.name, rebate.text)
+            else:
+                answer_message_text = userDiscountsTexts.show_rebates_withImages_text.format(rebate.name, rebate.text)
+
+        await call.message.answer(answer_message_text,
+        reply_markup=await globalKeyboards.back_to_selection_menu_kb('start|discounts|rebates'))
+    else:
+        await call.message.answer(globalTexts.data_notFound_text)
+'''/Скидки/'''
+
+
+'''Акции'''
+# Отправка сообщения со всеми акциями
+async def send_stocks(call: types.CallbackQuery, state: FSMContext) -> None:
+    stocks = await AsyncORM.get_all_stocks()
+    prefix = "stocks"
+
+    async def getStocksButtonsAndAmount():
+        stocks = await AsyncORM.get_all_stocks()
+
+        buttons = [[types.InlineKeyboardButton(
+        text=stock.name,
+        callback_data=f'{prefix}|{stock.id}')] for stock in stocks]
+
+        return [buttons, len(stocks)]
+    
+    await sendPaginationMessage(call, state, stocks, getStocksButtonsAndAmount,
+    prefix, userDiscountsTexts.stocks_text, 10, 
+    [await globalKeyboards.get_back_to_selection_menu_kb_button('start|discounts')], False)
+
+
+# Отправка сообщения с информацией об акции
+async def show_stock(call: types.CallbackQuery, state: FSMContext) -> None:
+    await deleteMessage(call)
+
+    temp = call.data.split("|")
+
+    stock_id = int(temp[1])
+
+    stock = await AsyncORM.get_stock_by_id(stock_id)
+
+    if stock:
+        await mediaGroupSend(call, state, stock.photo_file_ids, stock.video_file_ids)
+
+        answer_message_text = userDiscountsTexts.show_stocks_withoutText_text.format(stock.name)
+
+        if stock.text:
+            if not stock.photo_file_ids and not stock.video_file_ids:
+                answer_message_text = userDiscountsTexts.show_stocks_text.format(stock.name, stock.text)
+            else:
+                answer_message_text = userDiscountsTexts.show_stocks_withImages_text.format(stock.name, stock.text)
+
+        await call.message.answer(answer_message_text,
+        reply_markup=await globalKeyboards.back_to_selection_menu_kb('start|discounts|stocks'))
+    else:
+        await call.message.answer(globalTexts.data_notFound_text)
+'''/Акции/'''
+'''/Скидки и акции/'''
 
 
 def hand_add():
@@ -394,9 +503,9 @@ def hand_add():
     '''/О нас/'''
 
     '''Что нового?'''
-    '''Новости команды'''
     router.callback_query.register(send_what_is_new_selection_menu, lambda c: c.data == 'start|what_is_new')
 
+    '''Новости команды'''
     router.callback_query.register(send_team_news, lambda c: c.data == 'start|what_is_new|team_news')
     
     router.callback_query.register(show_team_news_item, lambda c: 
@@ -417,3 +526,21 @@ def hand_add():
     re.match(r"^concert_music\|(?P<concert_music_item_id>\d+)$", c.data))
     '''/Музыка с концерта/'''
     '''/Что нового?/'''
+
+    '''Скидки и акции'''
+    router.callback_query.register(send_discounts_selection_menu, lambda c: c.data == 'start|discounts')
+
+    '''Скидки'''
+    router.callback_query.register(send_rebates, lambda c: c.data == 'start|discounts|rebates')
+    
+    router.callback_query.register(show_rebate, lambda c: 
+    re.match(r"^rebates\|(?P<rebate_id>\d+)$", c.data))
+    '''/Скидки/'''
+
+    '''Акции'''
+    router.callback_query.register(send_stocks, lambda c: c.data == 'start|discounts|stocks')
+
+    router.callback_query.register(show_stock, lambda c: 
+    re.match(r"^stocks\|(?P<stock_id>\d+)$", c.data))
+    '''/Акции/'''
+    '''/Скидки и акции/'''

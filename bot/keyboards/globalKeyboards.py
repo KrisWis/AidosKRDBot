@@ -23,6 +23,11 @@ async def back_to_selection_menu_kb(callback_data: str):
     return kb
 
 
+# Получение кнопки из инлайн-клавиатуры для перехода обратно в меню выбора
+async def get_back_to_selection_menu_kb_button(callback_data: str):
+    return InlineKeyboardButton(text='🔙 Обратно в меню выбора', callback_data=callback_data)
+
+
 # Получение кнопки из инлайн-клавиатуры для перехода обратно в начальное меню
 async def get_back_to_start_menu_kb_button():
     return InlineKeyboardButton(text='🔙 Обратно в меню', callback_data='start')
@@ -69,3 +74,14 @@ async def what_is_new_selection_menu_kb():
 async def get_all_team_news_kb_backToSelectionMenuButton():
     return InlineKeyboardButton(text='🔙 Обратно в меню выбора', callback_data='start|what_is_new')
 '''/Что нового?/'''
+
+
+'''Скидки и акции'''
+# Инлайн-клавиатура для открытия меню выбора "Скидки и акции"
+async def discounts_selection_menu_kb():
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='💳 Скидки', callback_data=f'start|discounts|rebates')],
+    [InlineKeyboardButton(text='💸 Акции', callback_data=f'start|discounts|stocks')]])
+
+    return kb
+'''/Скидки и акции/'''
