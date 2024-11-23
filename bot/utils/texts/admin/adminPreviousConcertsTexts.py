@@ -26,7 +26,7 @@ show_previous_concert_withoutText_text = '''
 previous_concert_actions_edit_text = """
 Пришлите обновлённую информацию о прошедшем концерте (текст/видео/фото) ✍️
 
-Старая информация будет заменена на новую.
+<b>Старая информация будет заменена на новую.</b>
 """
 
 previous_concert_actions_delete_confirmation_text = """

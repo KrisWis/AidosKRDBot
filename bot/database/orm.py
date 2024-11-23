@@ -1,5 +1,5 @@
 from sqlalchemy import *
-from database.models import UsersOrm, PreviousConcertsOrm, FutureConcertsOrm, TeamNewsOrm, ExclusiveTracksOrm, ConcertMusicOrm
+from database.models import UsersOrm, PreviousConcertsOrm, FutureConcertsOrm, TeamNewsOrm, ExclusiveTracksOrm, ConcertMusicOrm, RebatesOrm
 from database.db import Base, engine, async_session, date
 from datetime import datetime, timedelta
 from typing import Union
@@ -642,3 +642,92 @@ class AsyncORM:
             
             return False
     '''/ConcertMusicOrm/'''
+
+
+    '''RebatesOrm'''
+    # Получение акции по id
+    @staticmethod
+    async def get_rebate_by_id(id: int) -> RebatesOrm:
+        async with async_session() as session:
+
+            result = await session.execute(
+                select(RebatesOrm).where(RebatesOrm.id == id))
+            rebate = result.scalar()
+            
+            return rebate
+        
+
+    # Получение акции по названию
+    @staticmethod
+    async def get_rebate_by_name(name: str) -> RebatesOrm:
+        async with async_session() as session:
+
+            result = await session.execute(
+                select(RebatesOrm).where(RebatesOrm.name == name))
+            rebate = result.scalar()
+            
+            return rebate
+        
+
+    # Добавление акции в базу данных
+    @staticmethod
+    async def add_rebate(name: str, created_at: Date, text: str,
+        photo_file_ids: list[str] = [],
+        video_file_ids: list[str] = []) -> bool:
+
+        rebate = RebatesOrm(name=name, created_at=created_at, text=text,
+        photo_file_ids=photo_file_ids, video_file_ids=video_file_ids)
+
+        async with async_session() as session:
+            session.add(rebate)
+
+            await session.commit() 
+
+        return True
+
+
+    # Получение всех акций
+    @staticmethod
+    async def get_all_rebates() -> list[RebatesOrm]:
+        
+        async with async_session() as session:
+            result = await session.execute(
+                select(RebatesOrm).order_by(RebatesOrm.created_at.desc()))
+            rebate = result.scalars().all()
+            
+            return rebate
+        
+
+    # Изменение информации акции
+    @staticmethod
+    async def change_rebate_info(id: int, text: str,
+        photo_file_ids: list[str], video_file_ids: list[str]) -> bool:
+
+        async with async_session() as session:
+            result = await session.execute(select(RebatesOrm).where(RebatesOrm.id == id))
+            rebate: RebatesOrm = result.scalar()
+
+            rebate.text = text
+            rebate.photo_file_ids = photo_file_ids
+            rebate.video_file_ids = video_file_ids
+
+            await session.commit()
+                
+        return True
+    
+
+    # Удаление акции по id
+    @staticmethod
+    async def delete_rebate(id: int) -> RebatesOrm:
+        async with async_session() as session:
+
+            result = await session.execute(select(RebatesOrm).where(RebatesOrm.id == id))
+            rebate: RebatesOrm = result.scalar()
+            
+            if rebate:
+                await session.delete(rebate)
+                await session.commit()  
+                return True
+            
+            return False
+    '''/RebatesOrm/'''

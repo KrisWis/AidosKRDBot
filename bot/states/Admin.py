@@ -41,3 +41,14 @@ class WhatIsNewStates(StatesGroup):
     concert_music_item_wait_info = State()
     '''/Музыка с концерта/'''
 '''/Что нового?/'''
+
+
+'''Скидки и акции'''
+class DiscountsStates(StatesGroup):
+    '''Акции'''
+    rebate_wait_name = State()
+
+    rebate_wait_info = State()
+    '''/Акции/'''
+
+'''/Скидки и акции/'''

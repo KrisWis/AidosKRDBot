@@ -87,7 +87,7 @@ async def future_concert_actions_kb(future_concert_id: int, action: str):
 '''/Предстоящие концерты/'''
 
 '''Что нового?'''
-# Инлайн-клавиатура для открытия меню выбора новостей
+# Инлайн-клавиатура для открытия меню выбора "Что нового?"
 async def what_is_new_selection_menu_kb():
     kb = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='📰 Новости команды', callback_data=f'admin|what_is_new|team_news')],
@@ -96,3 +96,14 @@ async def what_is_new_selection_menu_kb():
 
     return kb
 '''/Что нового?/'''
+
+
+'''Скидки и акции'''
+# Инлайн-клавиатура для открытия меню выбора "Скидки и акции"
+async def discounts_selection_menu_kb():
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='💳 Скидки', callback_data=f'admin|discounts|rebates')],
+    [InlineKeyboardButton(text='💸 Акции', callback_data=f'admin|discounts|stocks')]])
+
+    return kb
+'''/Скидки и акции/'''

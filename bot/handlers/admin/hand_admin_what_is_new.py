@@ -9,12 +9,11 @@ from states.Admin import WhatIsNewStates
 from RunBot import logger
 import datetime
 from aiogram.filters import StateFilter
-from InstanceBot import bot
 import re
 
 
 '''Что нового?'''
-# Отправка сообщения со меню выбора "Что нового?"
+# Отправка сообщения с меню выбора "Что нового?"
 async def send_what_is_new_selection_menu(call: types.CallbackQuery, state: FSMContext) -> None:
     
     await deleteSendedMediaGroup(state, call.from_user.id)

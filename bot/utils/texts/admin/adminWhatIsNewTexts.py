@@ -11,7 +11,7 @@ add_team_news_item_success_text = "Новость команды успешно 
 team_news_item_actions_edit_text = """
 Пришлите обновлённую информацию о новости команды (текст/видео/фото) ✍️
 
-Старая информация будет заменена на новую.
+<b>Старая информация будет заменена на новую.</b>
 """
 
 team_news_item_actions_delete_confirmation_text = """
@@ -39,7 +39,7 @@ add_exclusive_track_success_text = "Эксклюзивный трек добав
 exclusive_track_actions_edit_text = """
 Пришлите обновлённый эксклюзивный трек ✍️
 
-Старая информация будет заменена на новую.
+<b>Старая информация будет заменена на новую.</b>
 """
 
 exclusive_track_actions_delete_confirmation_text = """
@@ -67,7 +67,7 @@ add_concert_music_item_success_text = "Музыка с концерта доба
 concert_music_item_actions_edit_text = """
 Пришлите обновлённую музыку с концерта ✍️
 
-Старая информация будет заменена на новую.
+<b>Старая информация будет заменена на новую.</b>
 """
 
 concert_music_item_actions_delete_confirmation_text = """
