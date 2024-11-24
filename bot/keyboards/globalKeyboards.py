@@ -81,7 +81,8 @@ async def get_all_team_news_kb_backToSelectionMenuButton():
 async def discounts_selection_menu_kb():
     kb = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='💳 Скидки', callback_data=f'start|discounts|rebates')],
-    [InlineKeyboardButton(text='💸 Акции', callback_data=f'start|discounts|stocks')]])
+    [InlineKeyboardButton(text='💸 Акции', callback_data=f'start|discounts|stocks')],
+    [InlineKeyboardButton(text='👥 Реферальная система', callback_data=f'start|discounts|ref_system')]])
 
     return kb
 '''/Скидки и акции/'''

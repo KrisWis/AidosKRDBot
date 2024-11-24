@@ -467,6 +467,26 @@ async def show_stock(call: types.CallbackQuery, state: FSMContext) -> None:
     else:
         await call.message.answer(globalTexts.data_notFound_text)
 '''/Акции/'''
+
+'''Реферальная система'''
+# Отправка сообщения с реферальной статистикой пользователя
+async def send_ref_stats(call: types.CallbackQuery) -> None:
+    user_id = call.from_user.id
+
+    user_reg_date = await AsyncORM.get_user_reg_date(user_id)
+
+    user_reg_date = user_reg_date.strftime("%d.%m.%Y %H:%M")
+
+    user_referals = await AsyncORM.get_user_referals(user_id)
+
+    bot_info = await bot.get_me()
+    bot_username = bot_info.username
+    ref_link = f'https://t.me/{bot_username}?start={user_id}'
+
+    await call.message.edit_text(userDiscountsTexts.ref_stats_text
+    .format(user_id, user_reg_date, len(user_referals), ref_link),
+    reply_markup=await globalKeyboards.back_to_selection_menu_kb('start|discounts'))
+'''/Реферальная система/'''
 '''/Скидки и акции/'''
 
 
@@ -543,4 +563,8 @@ def hand_add():
     router.callback_query.register(show_stock, lambda c: 
     re.match(r"^stocks\|(?P<stock_id>\d+)$", c.data))
     '''/Акции/'''
+
+    '''Реферальная система'''
+    router.callback_query.register(send_ref_stats, lambda c: c.data == 'start|discounts|ref_system')
+    '''/Реферальная система/'''
     '''/Скидки и акции/'''

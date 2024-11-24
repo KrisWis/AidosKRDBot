@@ -103,6 +103,31 @@ class AsyncORM:
         else:
             return False
         
+
+    # Получение даты регистрации пользователя по id
+    @staticmethod
+    async def get_user_reg_date(user_id: int) -> date:
+        async with async_session() as session:
+
+            result: UsersOrm = await session.get(UsersOrm, user_id)
+
+            if result:
+                return result.user_reg_date
+            
+            return False  
+
+
+    # Получение всех рефералов пользователя по его id
+    @staticmethod
+    async def get_user_referals(user_id: int) -> list[UsersOrm]:
+        async with async_session() as session:
+            result = await session.execute(
+                select(UsersOrm).where(UsersOrm.referer_id == user_id)
+            )
+
+            referals: list[UsersOrm] = result.scalars().all()
+
+            return referals
     '''/UsersORM/'''
 
     '''PreviousConcertsORM'''
