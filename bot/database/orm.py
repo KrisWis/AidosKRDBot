@@ -1,5 +1,5 @@
 from sqlalchemy import *
-from database.models import UsersOrm, PreviousConcertsOrm, FutureConcertsOrm, TeamNewsOrm, ExclusiveTracksOrm, ConcertMusicOrm, RebatesOrm, StocksOrm
+from database.models import UsersOrm, PreviousConcertsOrm, FutureConcertsOrm, TeamNewsOrm, ExclusiveTracksOrm, ConcertMusicOrm, RebatesOrm, StocksOrm, PartnersOrm
 from database.db import Base, engine, async_session, date
 from datetime import datetime, timedelta
 from typing import Union
@@ -845,3 +845,92 @@ class AsyncORM:
             
             return False
     '''/StocksOrm/'''
+
+
+    '''PartnersOrm'''
+    # Получение партнёра по id
+    @staticmethod
+    async def get_partner_by_id(id: int) -> PartnersOrm:
+        async with async_session() as session:
+
+            result = await session.execute(
+                select(PartnersOrm).where(PartnersOrm.id == id))
+            partner = result.scalar()
+            
+            return partner
+        
+
+    # Получение партнёра по названию
+    @staticmethod
+    async def get_partner_by_name(name: str) -> PartnersOrm:
+        async with async_session() as session:
+
+            result = await session.execute(
+                select(PartnersOrm).where(PartnersOrm.name == name))
+            partner = result.scalar()
+            
+            return partner
+        
+
+    # Добавление партнёра в базу данных
+    @staticmethod
+    async def add_partner(name: str, created_at: Date, text: str,
+        photo_file_ids: list[str] = [],
+        video_file_ids: list[str] = []) -> bool:
+
+        partner = PartnersOrm(name=name, created_at=created_at, text=text,
+        photo_file_ids=photo_file_ids, video_file_ids=video_file_ids)
+
+        async with async_session() as session:
+            session.add(partner)
+
+            await session.commit() 
+
+        return True
+
+
+    # Получение всех партнёров
+    @staticmethod
+    async def get_all_partners() -> list[PartnersOrm]:
+        
+        async with async_session() as session:
+            result = await session.execute(
+                select(PartnersOrm).order_by(PartnersOrm.created_at.desc()))
+            partner = result.scalars().all()
+            
+            return partner
+        
+
+    # Изменение информации о партнёре
+    @staticmethod
+    async def change_partner_info(id: int, text: str,
+        photo_file_ids: list[str], video_file_ids: list[str]) -> bool:
+
+        async with async_session() as session:
+            result = await session.execute(select(PartnersOrm).where(PartnersOrm.id == id))
+            partner: PartnersOrm = result.scalar()
+
+            partner.text = text
+            partner.photo_file_ids = photo_file_ids
+            partner.video_file_ids = video_file_ids
+
+            await session.commit()
+                
+        return True
+    
+
+    # Удаление партнёра по id
+    @staticmethod
+    async def delete_partner(id: int) -> PartnersOrm:
+        async with async_session() as session:
+
+            result = await session.execute(select(PartnersOrm).where(PartnersOrm.id == id))
+            partner: PartnersOrm = result.scalar()
+            
+            if partner:
+                await session.delete(partner)
+                await session.commit()  
+                return True
+            
+            return False
+    '''/PartnersOrm/'''

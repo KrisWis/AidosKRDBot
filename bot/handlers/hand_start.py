@@ -1,7 +1,7 @@
 from aiogram import types
 from InstanceBot import router
 from aiogram.filters import CommandStart, StateFilter
-from utils import globalTexts, userPreviousConcertsTexts, userFutureConcertsTexts, userAboutUsTexts, userWhatsNewTexts, userDiscountsTexts
+from utils import globalTexts, userPreviousConcertsTexts, userFutureConcertsTexts, userAboutUsTexts, userWhatsNewTexts, userDiscountsTexts, userPartnersTexts
 from keyboards import globalKeyboards
 from database.orm import AsyncORM
 from aiogram.fsm.context import FSMContext
@@ -490,6 +490,54 @@ async def send_ref_stats(call: types.CallbackQuery) -> None:
 '''/Скидки и акции/'''
 
 
+'''Партнёры'''
+# Отправка сообщения со всеми партнёрами
+async def send_partners(call: types.CallbackQuery, state: FSMContext) -> None:
+    partners = await AsyncORM.get_all_partners()
+    prefix = "partners"
+
+    async def getPartnersButtonsAndAmount():
+        partners = await AsyncORM.get_all_partners()
+
+        buttons = [[types.InlineKeyboardButton(
+        text=partner.name,
+        callback_data=f'{prefix}|{partner.id}')] for partner in partners]
+
+        return [buttons, len(partners)]
+    
+    await sendPaginationMessage(call, state, partners, getPartnersButtonsAndAmount,
+    prefix, userPartnersTexts.partners_text, 10,
+    [await globalKeyboards.get_back_to_start_menu_kb_button()], False)
+
+
+# Отправка сообщения с информацией о партнёре
+async def show_partner(call: types.CallbackQuery, state: FSMContext) -> None:
+    await deleteMessage(call)
+
+    temp = call.data.split("|")
+
+    partner_id = int(temp[1])
+
+    partner = await AsyncORM.get_partner_by_id(partner_id)
+
+    if partner:
+        await mediaGroupSend(call, state, partner.photo_file_ids, partner.video_file_ids)
+
+        answer_message_text = userPartnersTexts.show_partners_withoutText_text.format(partner.name)
+
+        if partner.text:
+            if not partner.photo_file_ids and not partner.video_file_ids:
+                answer_message_text = userPartnersTexts.show_partners_text.format(partner.name, partner.text)
+            else:
+                answer_message_text = userPartnersTexts.show_partners_withImages_text.format(partner.name, partner.text)
+
+        await call.message.answer(answer_message_text,
+        reply_markup=await globalKeyboards.back_to_selection_menu_kb('start|partners'))
+    else:
+        await call.message.answer(globalTexts.data_notFound_text)
+'''/Партнёры/'''
+
+
 def hand_add():
     '''Глобальное'''
     router.message.register(start, StateFilter("*"), CommandStart())
@@ -568,3 +616,10 @@ def hand_add():
     router.callback_query.register(send_ref_stats, lambda c: c.data == 'start|discounts|ref_system')
     '''/Реферальная система/'''
     '''/Скидки и акции/'''
+
+    '''Партнёры'''
+    router.callback_query.register(send_partners, lambda c: c.data == 'start|partners')
+    
+    router.callback_query.register(show_partner, lambda c: 
+    re.match(r"^partners\|(?P<partner_id>\d+)$", c.data))
+    '''/Партнёры/'''

@@ -8,7 +8,7 @@ async def admin_menu_kb():
     InlineKeyboardButton(text='▶️ Предстоящие концерты', callback_data='admin|future_concerts')],
     [InlineKeyboardButton(text='❓ Что нового?', callback_data='admin|what_is_new'),
     InlineKeyboardButton(text='💲 Скидки и акции', callback_data='admin|discounts')],
-    [InlineKeyboardButton(text='👥 Наши партнёры', callback_data='admin|out_partners')],
+    [InlineKeyboardButton(text='👥 Наши партнёры', callback_data='admin|partners')],
     [InlineKeyboardButton(text='📊 Статистика', callback_data='admin|stats')]])
 
     return kb

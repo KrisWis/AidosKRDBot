@@ -56,5 +56,13 @@ class DiscountsStates(StatesGroup):
 
     stock_wait_info = State()
     '''/Акции/'''
-
 '''/Скидки и акции/'''
+
+
+'''Партнёры'''
+class PartnersStates(StatesGroup):
+    partner_wait_name = State()
+
+    partner_wait_info = State()
+
+'''/Партнёры/'''

@@ -10,7 +10,7 @@ async def start_menu_kb():
     [InlineKeyboardButton(text='ℹ️ О нас', callback_data='start|about_us'),
     InlineKeyboardButton(text='❓ Что нового?', callback_data='start|what_is_new')],
     [InlineKeyboardButton(text='💲 Скидки и акции', callback_data='start|discounts'),
-    InlineKeyboardButton(text='👥 Наши партнёры', callback_data='start|out_partners')]])
+    InlineKeyboardButton(text='👥 Наши партнёры', callback_data='start|partners')]])
 
     return kb
 

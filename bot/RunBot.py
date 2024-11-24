@@ -32,6 +32,8 @@ async def on_startup() -> None:
     handlers.hand_admin_what_is_new.hand_add()
 
     handlers.hand_admin_discounts.hand_add()
+
+    handlers.hand_admin_partners.hand_add()
     
     bot_info = await bot.get_me()
 
