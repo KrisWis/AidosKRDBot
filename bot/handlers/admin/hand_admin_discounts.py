@@ -77,7 +77,6 @@ async def add_rebate(message: types.Message, album: list[types.Message] = [], st
     result = await albumInfoProcess(DiscountsStates.rebate_wait_info, state, message, album)
 
     if not result:
-        await message.answer(globalTexts.data_isInvalid_text)
         return
 
     user_text = result[0]
@@ -131,7 +130,7 @@ async def show_rebate(call: types.CallbackQuery, state: FSMContext) -> None:
                 answer_message_text = userDiscountsTexts.show_rebates_withImages_text.format(rebate.name, rebate.text)
 
         await call.message.answer(answer_message_text,
-        reply_markup=await adminKeyboards.actions_kb(rebate.id, 'rebates'))
+        reply_markup=await adminKeyboards.actions_kb(rebate.id, 'rebates', 'admin|discounts|rebates'))
     else:
         await call.message.answer(globalTexts.data_notFound_text)
 
@@ -242,7 +241,6 @@ async def add_stock(message: types.Message, album: list[types.Message] = [], sta
     result = await albumInfoProcess(DiscountsStates.stock_wait_info, state, message, album)
 
     if not result:
-        await message.answer(globalTexts.data_isInvalid_text)
         return
 
     user_text = result[0]
@@ -296,7 +294,7 @@ async def show_stock(call: types.CallbackQuery, state: FSMContext) -> None:
                 answer_message_text = userDiscountsTexts.show_stocks_withImages_text.format(stock.name, stock.text)
 
         await call.message.answer(answer_message_text,
-        reply_markup=await adminKeyboards.actions_kb(stock.id, 'stocks'))
+        reply_markup=await adminKeyboards.actions_kb(stock.id, 'stocks', 'admin|discounts|rebates'))
     else:
         await call.message.answer(globalTexts.data_notFound_text)
 

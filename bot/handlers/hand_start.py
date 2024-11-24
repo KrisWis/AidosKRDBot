@@ -101,9 +101,9 @@ async def show_previous_concert(call: types.CallbackQuery, state: FSMContext) ->
             else:
                 answer_message_text = userPreviousConcertsTexts.show_previous_concert_withImages_text.format(previous_concert.name, previous_concert.info_text)
 
-        await call.message.answer(answer_message_text, reply_markup=await globalKeyboards.back_to_previous_concerts_menu_kb())
+        await call.message.answer(answer_message_text, reply_markup=await globalKeyboards.back_to_selection_menu_kb('start|previous_concerts'))
     else:
-        await call.message.answer(userPreviousConcertsTexts.data_notFound_text)
+        await call.message.answer(globalTexts.data_notFound_text)
 '''/Прошедшие концерты/'''
 
 

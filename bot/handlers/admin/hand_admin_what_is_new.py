@@ -74,7 +74,6 @@ async def add_team_news_item(message: types.Message, album: list[types.Message] 
     result = await albumInfoProcess(WhatIsNewStates.team_news_item_wait_info, state, message, album)
 
     if not result:
-        await message.answer(globalTexts.data_isInvalid_text)
         return
 
     user_text = result[0]
@@ -128,7 +127,7 @@ async def show_team_news_item(call: types.CallbackQuery, state: FSMContext) -> N
                 answer_message_text = userWhatsNewTexts.show_team_news_withImages_text.format(team_news_item.name, team_news_item.text)
 
         await call.message.answer(answer_message_text,
-        reply_markup=await adminKeyboards.actions_kb(team_news_item.id, 'team_news'))
+        reply_markup=await adminKeyboards.actions_kb(team_news_item.id, 'team_news', 'admin|what_is_new|team_news'))
     else:
         await call.message.answer(globalTexts.data_notFound_text)
 
@@ -284,7 +283,7 @@ async def show_exclusive_track(call: types.CallbackQuery) -> None:
     if exclusive_track:
         await call.message.answer_audio(audio=exclusive_track.audio_file_id,
         caption=exclusive_track.audio_file_info,
-        reply_markup=await adminKeyboards.actions_kb(exclusive_track.id, 'exclusive_tracks'))
+        reply_markup=await adminKeyboards.actions_kb(exclusive_track.id, 'exclusive_tracks', 'admin|what_is_new|exclusive_tracks'))
     else:
         await call.message.answer(globalTexts.data_notFound_text)
 
@@ -442,7 +441,7 @@ async def show_concert_music_item(call: types.CallbackQuery) -> None:
     if concert_music_item:
         await call.message.answer_audio(audio=concert_music_item.audio_file_id,
         caption=concert_music_item.audio_file_info,
-        reply_markup=await adminKeyboards.actions_kb(concert_music_item.id, 'concert_music'))
+        reply_markup=await adminKeyboards.actions_kb(concert_music_item.id, 'concert_music', 'admin|what_is_new|concert_music'))
     else:
         await call.message.answer(globalTexts.data_notFound_text)
 

@@ -65,7 +65,8 @@ async def what_is_new_selection_menu_kb():
     kb = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='📰 Новости команды', callback_data=f'start|what_is_new|team_news')],
     [InlineKeyboardButton(text='🔊 Эксклюзивные треки', callback_data=f'start|what_is_new|exclusive_tracks')],
-    [InlineKeyboardButton(text='🎶 Музыка с концерта', callback_data=f'start|what_is_new|concert_music')]])
+    [InlineKeyboardButton(text='🎶 Музыка с концерта', callback_data=f'start|what_is_new|concert_music')],
+    [InlineKeyboardButton(text='🔙 Обратно в меню', callback_data=f'start')]])
 
     return kb
 
@@ -82,7 +83,8 @@ async def discounts_selection_menu_kb():
     kb = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='💳 Скидки', callback_data=f'start|discounts|rebates')],
     [InlineKeyboardButton(text='💸 Акции', callback_data=f'start|discounts|stocks')],
-    [InlineKeyboardButton(text='👥 Реферальная система', callback_data=f'start|discounts|ref_system')]])
+    [InlineKeyboardButton(text='👥 Реферальная система', callback_data=f'start|discounts|ref_system')],
+    [InlineKeyboardButton(text='🔙 Обратно в меню', callback_data=f'start')]])
 
     return kb
 '''/Скидки и акции/'''

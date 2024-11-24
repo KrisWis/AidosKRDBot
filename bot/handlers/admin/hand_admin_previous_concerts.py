@@ -64,7 +64,6 @@ async def add_previous_concert(message: types.Message, album: list[types.Message
     result = await albumInfoProcess(PreviousConcertsStates.wait_info, state, message, album)
 
     if not result:
-        await message.answer(globalTexts.data_isInvalid_text)
         return
 
     user_text = result[0]
@@ -116,7 +115,7 @@ async def show_previous_concert(call: types.CallbackQuery, state: FSMContext) ->
                 answer_message_text = adminPreviousConcertsTexts.show_previous_concert_withImages_text.format(previous_concert.name, previous_concert.info_text)
 
         await call.message.answer(answer_message_text,
-        reply_markup=await adminKeyboards.actions_kb(previous_concert.id, 'previous_concerts'))
+        reply_markup=await adminKeyboards.actions_kb(previous_concert.id, 'previous_concerts', 'admin|previous_concerts'))
     else:
         await call.message.answer(globalTexts.data_notFound_text)
 

@@ -94,7 +94,9 @@ async def wait_future_concert_platform_info(message: types.Message, album: list[
 async def wait_future_concert_holding_time(message: types.Message, album: list[types.Message] = [], state: FSMContext = None):
     result = await albumInfoProcess(FutureConcertsStates.wait_platform_info, state, message, album)
 
-    if not result:
+    current_state = await state.get_state()
+
+    if not result and current_state:
         return
     
     user_text = result[0]

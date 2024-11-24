@@ -39,7 +39,7 @@ class AsyncORM:
         date = now - timedelta(weeks=100000)
 
         if period == 'day':
-            date = now - timedelta(hours=1)
+            date = now - timedelta(days=1)
 
         if period == 'week':
             week = now - timedelta(weeks=1)

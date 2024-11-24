@@ -67,7 +67,6 @@ async def add_partner(message: types.Message, album: list[types.Message] = [], s
     result = await albumInfoProcess(PartnersStates.partner_wait_info, state, message, album)
 
     if not result:
-        await message.answer(globalTexts.data_isInvalid_text)
         return
 
     user_text = result[0]
@@ -121,7 +120,7 @@ async def show_partner(call: types.CallbackQuery, state: FSMContext) -> None:
                 answer_message_text = userPartnersTexts.show_partners_withImages_text.format(partner.name, partner.text)
 
         await call.message.answer(answer_message_text,
-        reply_markup=await adminKeyboards.actions_kb(partner.id, 'partners'))
+        reply_markup=await adminKeyboards.actions_kb(partner.id, 'partners', 'admin|partners'))
     else:
         await call.message.answer(globalTexts.data_notFound_text)
 

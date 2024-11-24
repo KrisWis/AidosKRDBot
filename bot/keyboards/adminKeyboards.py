@@ -38,10 +38,11 @@ async def get_kb_backToSelectionMenuButton(callback_data: str):
 
 
 # Инлайн-клавиатура для взаимодействия с данными
-async def actions_kb(id: int, prefix: str):
+async def actions_kb(id: int, prefix: str, back_callback_data: str):
     kb = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='🔄 Заменить', callback_data=f'{prefix}|{id}|replace')],
-    [InlineKeyboardButton(text='❌ Удалить', callback_data=f'{prefix}|{id}|delete')]])
+    [InlineKeyboardButton(text='❌ Удалить', callback_data=f'{prefix}|{id}|delete')],
+    [InlineKeyboardButton(text='🔙 Обратно в меню выбора', callback_data=back_callback_data)]])
 
     return kb
 
@@ -92,7 +93,8 @@ async def what_is_new_selection_menu_kb():
     kb = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='📰 Новости команды', callback_data=f'admin|what_is_new|team_news')],
     [InlineKeyboardButton(text='🔊 Эксклюзивные треки', callback_data=f'admin|what_is_new|exclusive_tracks')],
-    [InlineKeyboardButton(text='🎶 Музыка с концерта', callback_data=f'admin|what_is_new|concert_music')]])
+    [InlineKeyboardButton(text='🎶 Музыка с концерта', callback_data=f'admin|what_is_new|concert_music')],
+    [InlineKeyboardButton(text='🔙 Обратно в меню', callback_data=f'admin')]])
 
     return kb
 '''/Что нового?/'''
@@ -103,7 +105,8 @@ async def what_is_new_selection_menu_kb():
 async def discounts_selection_menu_kb():
     kb = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='💳 Скидки', callback_data=f'admin|discounts|rebates')],
-    [InlineKeyboardButton(text='💸 Акции', callback_data=f'admin|discounts|stocks')]])
+    [InlineKeyboardButton(text='💸 Акции', callback_data=f'admin|discounts|stocks')],
+    [InlineKeyboardButton(text='🔙 Обратно в меню', callback_data=f'admin')]])
 
     return kb
 '''/Скидки и акции/'''
