@@ -64,5 +64,9 @@ class PartnersStates(StatesGroup):
     partner_wait_name = State()
 
     partner_wait_info = State()
-
 '''/Партнёры/'''
+
+'''Статистика'''
+class StatsStates(StatesGroup):
+    wait_user_id = State()
+'''/Статистика/'''

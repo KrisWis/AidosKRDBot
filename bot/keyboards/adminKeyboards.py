@@ -107,3 +107,18 @@ async def discounts_selection_menu_kb():
 
     return kb
 '''/Скидки и акции/'''
+
+
+'''Статистика'''
+# Клавиатура для выбора времени статистики
+def select_stats_period_kb():
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text='День', callback_data='stats|day'),
+        InlineKeyboardButton(text='Неделя', callback_data='stats|week'),
+        InlineKeyboardButton(text='Месяц', callback_data='stats|month'),
+        InlineKeyboardButton(text='Все время', callback_data='stats|all')],
+        [InlineKeyboardButton(text='👤 Индивидуальная статистика', callback_data='stats|individual')],
+        [InlineKeyboardButton(text='🔙 Вернуться в меню', callback_data='admin')]])
+    
+    return kb
+'''/Статистика/'''
